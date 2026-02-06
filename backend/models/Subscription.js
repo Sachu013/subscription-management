@@ -31,6 +31,15 @@ const subscriptionSchema = new mongoose.Schema({
     renewalDate: {
         type: Date
     },
+    reminderEnabled: {
+        type: Boolean,
+        default: false
+    },
+    reminderDays: {
+        type: Number,
+        enum: [3, 7, 14],
+        default: 7
+    },
     status: {
         type: String,
         enum: ['Active', 'Cancelled', 'Expired'],

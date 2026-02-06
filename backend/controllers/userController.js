@@ -1,124 +1,116 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const User = require('../models/userModel');
 const { OAuth2Client } = require('google-auth-library');
+const User = require('../models/userModel');
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-// @desc    Register new user
-// @route   POST /api/auth/register
-// @access  Public
-const registerUser = async (req, res) => {
-    const { username, email, password } = req.body;
-
-    if (!username || !email || !password) {
-        return res.status(400).json({ message: 'Please add all fields' });
-    }
-
-    // Check if user exists
-    const userExists = await User.findOne({ email });
-
-    if (userExists) {
-        return res.status(400).json({ message: 'User already exists' });
-    }
-
-    // Create user
-    const user = await User.create({
-        username,
-        email,
-        password,
-    });
-
-    if (user) {
-        res.status(201).json({
-            _id: user.id,
-            username: user.username,
-            email: user.email,
-            token: generateToken(user._id),
-        });
-    } else {
-        res.status(400).json({ message: 'Invalid user data' });
-    }
-};
-
-// @desc    Authenticate a user
-// @route   POST /api/auth/login
-// @access  Public
-const loginUser = async (req, res) => {
-    const { email, password } = req.body;
-
-    // Check for user email
-    const user = await User.findOne({ email });
-
-    if (user && (await user.matchPassword(password))) {
-        res.json({
-            _id: user.id,
-            username: user.username,
-            email: user.email,
-            token: generateToken(user._id),
-        });
-    } else {
-        res.status(400).json({ message: 'Invalid credentials' });
-    }
-};
-
-// @desc    Get user data
-// @route   GET /api/auth/me
-// @access  Private
-const getMe = async (req, res) => {
-    res.status(200).json(req.user);
-};
-
-// Generate JWT
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: '30d',
-    });
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
 
-// @desc    Google Login
-// @route   POST /api/auth/google
-// @access  Public
-const googleLogin = async (req, res) => {
-    const { credential } = req.body;
-
+const registerUser = async (req, res) => {
     try {
-        // Verify Google token
+        const { username, email, password } = req.body;
+        if (!username || !email || !password) {
+            return res.status(400).json({ message: 'Please add all fields' });
+        }
+        const userExists = await User.findOne({ email });
+        if (userExists) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+        const user = await User.create({ username, email, password });
+        const token = generateToken(user._id);
+        res.status(201).json({
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            token,
+        });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+const loginUser = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Please add all fields' });
+        }
+        const user = await User.findOne({ email });
+        if (!user || !user.password) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+        const token = generateToken(user._id);
+        res.status(200).json({
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            token,
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getMe = async (req, res) => {
+    try {
+        res.status(200).json(req.user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const googleLogin = async (req, res) => {
+    try {
+        const { credential } = req.body;
+        if (!credential) {
+            return res.status(400).json({ message: 'Missing credential' });
+        }
+        const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
         const ticket = await client.verifyIdToken({
             idToken: credential,
             audience: process.env.GOOGLE_CLIENT_ID,
         });
-
         const payload = ticket.getPayload();
-        const { sub: googleId, email, name } = payload;
-
-        // Check if user exists
-        let user = await User.findOne({ $or: [{ googleId }, { email }] });
-
-        if (user) {
-            // Update googleId if user exists but doesn't have it
-            if (!user.googleId) {
-                user.googleId = googleId;
-                await user.save();
-            }
-        } else {
-            // Create new user
-            user = await User.create({
-                username: name,
-                email,
-                googleId,
-            });
+        const email = payload.email;
+        const googleId = payload.sub;
+        const username = payload.name || email.split('@')[0];
+        let user = await User.findOne({ email });
+        if (!user) {
+            user = await User.create({ username, email, googleId });
+        } else if (!user.googleId) {
+            user.googleId = googleId;
+            await user.save();
         }
-
-        res.json({
-            _id: user.id,
+        const token = generateToken(user._id);
+        res.status(200).json({
+            _id: user._id,
             username: user.username,
             email: user.email,
-            token: generateToken(user._id),
+            token,
         });
     } catch (error) {
-        console.error('Google auth error:', error);
-        res.status(401).json({ message: 'Google authentication failed' });
+        res.status(400).json({ message: error.message });
+    }
+};
+
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(200).json({ message: 'If the email exists, a reset link was sent' });
+        }
+        res.status(200).json({ message: 'Password reset instructions sent to your email' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
 
@@ -127,4 +119,5 @@ module.exports = {
     loginUser,
     getMe,
     googleLogin,
+    forgotPassword,
 };
