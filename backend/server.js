@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const path = require('path');
 
 // Load environment variables
 dotenv.config();
@@ -12,8 +13,24 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(express.json()); // Allows us to accept JSON data in the body
-app.use(cors()); // Allows frontend to talk to backend
+app.use(express.json());
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            const allowed = process.env.CLIENT_URL;
+            if (!allowed) {
+                return callback(null, true);
+            }
+            if (!origin || origin === allowed) {
+                return callback(null, true);
+            }
+            return callback(new Error('Not allowed by CORS'));
+        },
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    })
+);
 
 // Basic Route for testing
 app.get('/', (req, res) => {
@@ -24,6 +41,16 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./routes/userRoutes'));
 app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
 app.use('/health', require('./routes/health.route'));
+
+// Global error handler
+app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500;
+    const message = err.message || 'Internal Server Error';
+    if (process.env.NODE_ENV !== 'production') {
+        return res.status(statusCode).json({ message, stack: err.stack });
+    }
+    return res.status(statusCode).json({ message });
+});
 
 const PORT = process.env.PORT || 5000;
 

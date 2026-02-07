@@ -1,6 +1,10 @@
 const axios = require('axios');
-
-const API_URL = 'http://localhost:5000/api/auth/';
+const API_URL_BASE = process.env.API_URL_BASE;
+if (!API_URL_BASE) {
+    console.error('Please set API_URL_BASE environment variable');
+    process.exit(1);
+}
+const API_URL = `${API_URL_BASE}/api/auth/`;
 
 const testLogin = async () => {
     try {
