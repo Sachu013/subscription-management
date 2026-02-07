@@ -24,7 +24,7 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
         }
     }, [initialData, isEditMode]);
 
-    const { name, category, cost, currency, startDate, billingCycle, nextBillingDate, reminderEnabled, reminderDays, status } = formData;
+const { name, category, cost, startDate, billingCycle, nextBillingDate, reminderEnabled, reminderDays } = formData;
 
     const onChange = (e) => {
         const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import subscriptionService from '../services/subscriptionService';
@@ -17,32 +17,38 @@ const Reports = () => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
+const fetchSubscriptions = useCallback(async () => {
+    try {
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        const token = storedUser ? storedUser.token : null;
+
+        if (token) {
+            const subs = await subscriptionService.getSubscriptions(token);
+            setSubscriptions(subs);
+            filterSubscriptions(subs, '', '');
+        }
+    } catch (error) {
+        const message =
+            (error.response && error.response.data && error.response.data.message) ||
+            error.message ||
+            error.toString();
+        toast.error(message);
+    } finally {
+        setIsLoading(false);
+    }
+}, []);
+
     useEffect(() => {
-        if (!user) {
-            navigate('/login');
-        } else {
-            fetchSubscriptions();
-        }
-    }, [user, navigate]);
+    if (!user) {
+        navigate('/login');
+    } else {
+        fetchSubscriptions();
+    }
+}, [user, navigate, fetchSubscriptions]);
 
-    const fetchSubscriptions = async () => {
-        try {
-            const storedUser = JSON.parse(localStorage.getItem('user'));
-            const token = storedUser ? storedUser.token : null;
 
-            if (token) {
-                const subs = await subscriptionService.getSubscriptions(token);
-                setSubscriptions(subs);
-                // Initially show all expired/cancelled
-                filterSubscriptions(subs, '', '');
-            }
-        } catch (error) {
-            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-            toast.error(message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    
+
 
     const filterSubscriptions = (subs, start, end) => {
         // Filter for expired or cancelled subscriptions
