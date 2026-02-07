@@ -38,13 +38,7 @@ const fetchSubscriptions = useCallback(async () => {
     }
 }, []);
 
-    useEffect(() => {
-    if (!user) {
-        navigate('/login');
-    } else {
-        fetchSubscriptions();
-    }
-}, [user, navigate, fetchSubscriptions]);
+    
 
 
     
@@ -69,6 +63,14 @@ const fetchSubscriptions = useCallback(async () => {
 
         setFilteredReports(filtered);
     };
+
+    useEffect(() => {
+    if (!user) {
+        navigate('/login');
+    } else {
+        fetchSubscriptions();
+    }
+}, [user, navigate, fetchSubscriptions]);
 
     const handleGenerateReport = () => {
         if (startDate && endDate) {
