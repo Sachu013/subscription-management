@@ -49,7 +49,30 @@ const { name, category, cost, startDate, billingCycle, nextBillingDate, reminder
                 </div>
                 <div className="form-group">
                     <label>Category</label>
-                    <input type="text" name="category" value={category} onChange={onChange} />
+                    <select name="category" value={category} onChange={onChange} required>
+                        <option value="">Select category</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Music">Music</option>
+                        <option value="OTT / Streaming">OTT / Streaming</option>
+                        <option value="Gaming">Gaming</option>
+                        <option value="Education">Education</option>
+                        <option value="Productivity">Productivity</option>
+                        <option value="Cloud Services">Cloud Services</option>
+                        <option value="Developer Tools">Developer Tools</option>
+                        <option value="Design Tools">Design Tools</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Health & Fitness">Health & Fitness</option>
+                        <option value="Food & Delivery">Food & Delivery</option>
+                        <option value="News & Media">News & Media</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Storage">Storage</option>
+                        <option value="Communication">Communication</option>
+                        <option value="Security">Security</option>
+                        <option value="AI Tools">AI Tools</option>
+                        <option value="Other">Other</option>
+                    </select>
                 </div>
                 <div className="form-group">
                     <label>Cost</label>
