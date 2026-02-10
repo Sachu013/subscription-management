@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import analyticsService from '../services/analyticsService';
@@ -15,30 +15,6 @@ const CategoryComparison = () => {
     const [comparisonData, setComparisonData] = useState([]);
     const [categories, setCategories] = useState([]);
 
-    // Predefined categories
-    const allCategories = [
-        'Entertainment',
-        'Music',
-        'OTT / Streaming',
-        'Gaming',
-        'Education',
-        'Productivity',
-        'Cloud Services',
-        'Developer Tools',
-        'Design Tools',
-        'Finance',
-        'Health & Fitness',
-        'Food & Delivery',
-        'News & Media',
-        'Shopping',
-        'Utilities',
-        'Travel',
-        'Storage',
-        'Communication',
-        'Security',
-        'AI Tools',
-        'Other'
-    ];
 
     useEffect(() => {
         if (!user) {
@@ -73,9 +49,9 @@ const CategoryComparison = () => {
         if (selectedCategory) {
             fetchComparisonData();
         }
-    }, [selectedCategory]);
+    }, [selectedCategory, fetchComparisonData]);
 
-    const fetchComparisonData = async () => {
+    const fetchComparisonData = useCallback(async () => {
         setIsLoading(true);
         try {
             const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -91,7 +67,7 @@ const CategoryComparison = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [selectedCategory]);
 
     const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#fee140', '#30cfd0'];
 
