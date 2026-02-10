@@ -26,6 +26,9 @@ const Dashboard = () => {
     const [currentSubscription, setCurrentSubscription] = useState(null);
     const [showForm, setShowForm] = useState(false);
 
+    // Upcoming Payments State
+    const [upcomingPayments, setUpcomingPayments] = useState([]);
+
     useEffect(() => {
         if (!user) {
             navigate('/login');
@@ -39,6 +42,10 @@ const Dashboard = () => {
                         const subs = await subscriptionService.getSubscriptions(token);
                         setSubscriptions(subs);
                         setFilteredSubscriptions(subs);
+
+                        // Fetch upcoming payments
+                        const upcoming = await subscriptionService.getUpcomingPayments(token);
+                        setUpcomingPayments(upcoming);
                     }
                 } catch (error) {
                     const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
@@ -242,6 +249,70 @@ const Dashboard = () => {
                     <button onClick={handleLogout} className="btn">Logout</button>
                 </div>
             </header>
+
+            {/* Upcoming Payment Alerts */}
+            {!showForm && upcomingPayments.length > 0 && (
+                <div style={{
+                    background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 142, 83, 0.1) 100%)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '20px',
+                    borderRadius: '15px',
+                    border: '1px solid rgba(255, 107, 107, 0.3)',
+                    marginBottom: '30px'
+                }}>
+                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', fontSize: '20px', color: '#ff6b6b' }}>
+                        <FaBell /> Upcoming Payments ({upcomingPayments.length})
+                    </h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '15px' }}>
+                        {upcomingPayments.map((payment) => {
+                            const isUrgent = payment.daysUntilRenewal <= 2;
+                            return (
+                                <div
+                                    key={payment._id}
+                                    style={{
+                                        background: isUrgent
+                                            ? 'linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 68, 68, 0.2) 100%)'
+                                            : 'linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 152, 0, 0.2) 100%)',
+                                        padding: '15px',
+                                        borderRadius: '12px',
+                                        border: isUrgent
+                                            ? '1px solid rgba(255, 107, 107, 0.5)'
+                                            : '1px solid rgba(255, 193, 7, 0.5)',
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '10px' }}>
+                                        <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>{payment.name}</h3>
+                                        <span style={{
+                                            background: isUrgent ? '#ff6b6b' : '#ffc107',
+                                            color: '#000',
+                                            padding: '4px 10px',
+                                            borderRadius: '12px',
+                                            fontSize: '12px',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            {payment.daysUntilRenewal === 0 ? 'TODAY' : `${payment.daysUntilRenewal}d`}
+                                        </span>
+                                    </div>
+                                    <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)', margin: '5px 0' }}>
+                                        {payment.category}
+                                    </p>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#43e97b' }}>
+                                            ₹{payment.cost}
+                                        </span>
+                                        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
+                                            {payment.billingCycle}
+                                        </span>
+                                    </div>
+                                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginTop: '8px', marginBottom: 0 }}>
+                                        Due: {new Date(payment.nextBillingDate).toLocaleDateString()}
+                                    </p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* Summary Cards */}
             {!showForm && (

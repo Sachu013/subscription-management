@@ -137,10 +137,57 @@ const deleteSubscription = async (req, res) => {
     }
 };
 
+// @desc    Get upcoming payments (within next 7 days)
+// @route   GET /api/subscriptions/upcoming-payments
+// @access  Private
+const getUpcomingPayments = async (req, res) => {
+    try {
+        const subscriptions = await Subscription.find({
+            user: req.user.id,
+            status: 'Active'
+        });
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const sevenDaysFromNow = new Date(today);
+        sevenDaysFromNow.setDate(today.getDate() + 7);
+
+        const upcomingPayments = subscriptions
+            .filter(sub => {
+                const nextBilling = new Date(sub.nextBillingDate);
+                nextBilling.setHours(0, 0, 0, 0);
+                return nextBilling >= today && nextBilling <= sevenDaysFromNow;
+            })
+            .map(sub => {
+                const nextBilling = new Date(sub.nextBillingDate);
+                nextBilling.setHours(0, 0, 0, 0);
+                const daysUntilRenewal = Math.ceil((nextBilling - today) / (1000 * 60 * 60 * 24));
+
+                return {
+                    _id: sub._id,
+                    name: sub.name,
+                    category: sub.category,
+                    cost: sub.cost,
+                    currency: sub.currency,
+                    billingCycle: sub.billingCycle,
+                    nextBillingDate: sub.nextBillingDate,
+                    daysUntilRenewal: daysUntilRenewal
+                };
+            })
+            .sort((a, b) => a.daysUntilRenewal - b.daysUntilRenewal);
+
+        res.status(200).json(upcomingPayments);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getSubscriptions,
     createSubscription,
     getSubscriptionById,
     updateSubscription,
     deleteSubscription,
+    getUpcomingPayments,
 };

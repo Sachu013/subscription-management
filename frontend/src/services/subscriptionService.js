@@ -50,11 +50,24 @@ const updateSubscription = async (subscriptionId, subscriptionData, token) => {
     return response.data;
 };
 
+// Get upcoming payments
+const getUpcomingPayments = async (token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await http.get(API_URL + 'upcoming-payments', config);
+    return response.data;
+};
+
 const subscriptionService = {
     createSubscription,
     getSubscriptions,
     deleteSubscription,
-    updateSubscription
+    updateSubscription,
+    getUpcomingPayments
 };
 
 export default subscriptionService;

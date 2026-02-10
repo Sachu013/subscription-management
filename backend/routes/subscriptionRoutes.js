@@ -6,6 +6,7 @@ const {
     getSubscriptionById,
     updateSubscription,
     deleteSubscription,
+    getUpcomingPayments,
 } = require('../controllers/subscriptionController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -15,5 +16,7 @@ router
     .get(protect, getSubscriptionById)
     .put(protect, updateSubscription)
     .delete(protect, deleteSubscription);
+
+router.get('/upcoming-payments', protect, getUpcomingPayments);
 
 module.exports = router;
