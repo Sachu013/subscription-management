@@ -34,6 +34,7 @@ app.get('/', (req, res) => {
 // Define Routes
 app.use('/api/auth', require('./routes/userRoutes'));
 app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
+app.use('/api/analytics', require('./routes/analyticsRoutes'));
 app.use('/health', require('./routes/health.route'));
 
 // Global error handler
