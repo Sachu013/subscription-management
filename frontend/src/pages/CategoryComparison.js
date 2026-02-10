@@ -45,12 +45,6 @@ const CategoryComparison = () => {
         }
     }, [user, navigate]);
 
-    useEffect(() => {
-        if (selectedCategory) {
-            fetchComparisonData();
-        }
-    }, [selectedCategory, fetchComparisonData]);
-
     const fetchComparisonData = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -68,6 +62,12 @@ const CategoryComparison = () => {
             setIsLoading(false);
         }
     }, [selectedCategory]);
+
+    useEffect(() => {
+        if (selectedCategory) {
+            fetchComparisonData();
+        }
+    }, [selectedCategory, fetchComparisonData]);
 
     const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#fee140', '#30cfd0'];
 
