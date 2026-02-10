@@ -13,7 +13,31 @@ const subscriptionSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        default: 'Other'
+        enum: [
+            'Entertainment',
+            'Music',
+            'OTT / Streaming',
+            'Gaming',
+            'Education',
+            'Productivity',
+            'Cloud Services',
+            'Developer Tools',
+            'Design Tools',
+            'Finance',
+            'Health & Fitness',
+            'Food & Delivery',
+            'News & Media',
+            'Shopping',
+            'Utilities',
+            'Travel',
+            'Storage',
+            'Communication',
+            'Security',
+            'AI Tools',
+            'Other'
+        ],
+        default: 'Other',
+        required: true
     },
     cost: {
         type: Number,

@@ -158,8 +158,31 @@ const Dashboard = () => {
         setShowForm(false);
     }
 
-    // Get unique categories for filter
-    const categories = ['All', ...new Set(subscriptions.map(sub => sub.category).filter(Boolean))];
+    // Predefined categories for filter
+    const categories = [
+        'All',
+        'Entertainment',
+        'Music',
+        'OTT / Streaming',
+        'Gaming',
+        'Education',
+        'Productivity',
+        'Cloud Services',
+        'Developer Tools',
+        'Design Tools',
+        'Finance',
+        'Health & Fitness',
+        'Food & Delivery',
+        'News & Media',
+        'Shopping',
+        'Utilities',
+        'Travel',
+        'Storage',
+        'Communication',
+        'Security',
+        'AI Tools',
+        'Other'
+    ];
 
     // Get expiring subscriptions
     const getExpiringSoon = () => {
