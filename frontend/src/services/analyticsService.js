@@ -14,13 +14,13 @@ const getAnalyticsSummary = async (token) => {
 };
 
 // Get category breakdown
-const getCategoryBreakdown = async (token) => {
+const getCategoryBreakdown = async (token, filter = 'current') => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     };
-    const response = await http.get(API_URL + 'category-breakdown', config);
+    const response = await http.get(API_URL + `category-breakdown?filter=${filter}`, config);
     return response.data;
 };
 
@@ -36,13 +36,13 @@ const getMonthlyTrend = async (token) => {
 };
 
 // Get top subscriptions
-const getTopSubscriptions = async (token, limit = 5) => {
+const getTopSubscriptions = async (token, limit = 5, filter = 'current') => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     };
-    const response = await http.get(API_URL + `top-subscriptions?limit=${limit}`, config);
+    const response = await http.get(API_URL + `top-subscriptions?limit=${limit}&filter=${filter}`, config);
     return response.data;
 };
 

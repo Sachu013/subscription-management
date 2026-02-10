@@ -1,65 +1,165 @@
 const Subscription = require('../models/subscriptionModel');
 
+// ==================== HELPER FUNCTIONS ====================
+
+/**
+ * Calculate subscription status based on dates
+ * @param {Object} subscription - Subscription object
+ * @returns {string} - 'active', 'expired', or 'upcoming'
+ */
+const getSubscriptionStatus = (subscription) => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const startDate = new Date(subscription.startDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    // Check if upcoming
+    if (now < startDate) {
+        return 'upcoming';
+    }
+
+    // Check if expired
+    if (subscription.endDate) {
+        const endDate = new Date(subscription.endDate);
+        endDate.setHours(0, 0, 0, 0);
+
+        if (now > endDate) {
+            return 'expired';
+        }
+    }
+
+    // Otherwise active
+    return 'active';
+};
+
+/**
+ * Check if subscription is active in a specific month
+ * @param {Object} subscription - Subscription object
+ * @param {number} month - Month (0-11)
+ * @param {number} year - Year
+ * @returns {boolean} - True if active in the month
+ */
+const isActiveInMonth = (subscription, month, year) => {
+    const monthStart = new Date(year, month, 1);
+    monthStart.setHours(0, 0, 0, 0);
+
+    const monthEnd = new Date(year, month + 1, 0);
+    monthEnd.setHours(23, 59, 59, 999);
+
+    const startDate = new Date(subscription.startDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = subscription.endDate ? new Date(subscription.endDate) : null;
+    if (endDate) {
+        endDate.setHours(23, 59, 59, 999);
+    }
+
+    // Subscription must start before or during the month
+    if (startDate > monthEnd) return false;
+
+    // Subscription must not have ended before the month
+    if (endDate && endDate < monthStart) return false;
+
+    return true;
+};
+
+/**
+ * Calculate monthly expense for a subscription
+ * @param {Object} subscription - Subscription object
+ * @returns {number} - Monthly cost
+ */
+const getMonthlyExpense = (subscription) => {
+    let monthlyCost = 0;
+
+    if (subscription.billingCycle === 'Monthly') {
+        monthlyCost = subscription.cost;
+    } else if (subscription.billingCycle === 'Yearly') {
+        monthlyCost = subscription.cost / 12;
+    } else if (subscription.billingCycle === 'Weekly') {
+        monthlyCost = subscription.cost * 4;
+    }
+
+    return monthlyCost;
+};
+
+// ==================== ANALYTICS ENDPOINTS ====================
+
 // @desc    Get analytics summary
 // @route   GET /api/analytics/summary
 // @access  Private
 const getAnalyticsSummary = async (req, res) => {
     try {
         const subscriptions = await Subscription.find({ user: req.user.id });
-        const activeSubscriptions = subscriptions.filter(sub => sub.status === 'Active');
 
+        // Get current month and year
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        // Calculate counts based on computed status
+        let activeCount = 0;
+        let expiredCount = 0;
+        let upcomingCount = 0;
         let monthlyTotal = 0;
         let yearlyTotal = 0;
 
-        activeSubscriptions.forEach(sub => {
-            if (sub.billingCycle === 'Monthly') {
-                monthlyTotal += sub.cost;
-                yearlyTotal += sub.cost * 12;
-            } else if (sub.billingCycle === 'Yearly') {
-                yearlyTotal += sub.cost;
-                monthlyTotal += sub.cost / 12;
-            } else if (sub.billingCycle === 'Weekly') {
-                monthlyTotal += sub.cost * 4;
-                yearlyTotal += sub.cost * 52;
+        subscriptions.forEach(sub => {
+            const computedStatus = getSubscriptionStatus(sub);
+
+            if (computedStatus === 'active') {
+                activeCount++;
+
+                // Only include in monthly total if active in current month
+                if (isActiveInMonth(sub, currentMonth, currentYear)) {
+                    const monthlyExpense = getMonthlyExpense(sub);
+                    monthlyTotal += monthlyExpense;
+                    yearlyTotal += monthlyExpense * 12;
+                }
+            } else if (computedStatus === 'expired') {
+                expiredCount++;
+            } else if (computedStatus === 'upcoming') {
+                upcomingCount++;
             }
         });
 
         res.status(200).json({
-            activeCount: activeSubscriptions.length,
+            activeCount,
+            expiredCount,
+            upcomingCount,
             totalCount: subscriptions.length,
             monthlyTotal: parseFloat(monthlyTotal.toFixed(2)),
             yearlyTotal: parseFloat(yearlyTotal.toFixed(2)),
-            cancelledCount: subscriptions.filter(sub => sub.status === 'Cancelled').length,
-            expiredCount: subscriptions.filter(sub => sub.status === 'Expired').length
+            cancelledCount: subscriptions.filter(sub => sub.status === 'Cancelled').length
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
+
 // @desc    Get category-wise breakdown
-// @route   GET /api/analytics/category-breakdown
+// @route   GET /api/analytics/category-breakdown?filter=current|all_time|expired
 // @access  Private
 const getCategoryBreakdown = async (req, res) => {
     try {
-        const subscriptions = await Subscription.find({
-            user: req.user.id,
-            status: 'Active'
-        });
+        const filter = req.query.filter || 'current'; // Default to 'current'
+        const subscriptions = await Subscription.find({ user: req.user.id });
+
+        // Filter subscriptions based on computed status
+        let filteredSubscriptions = subscriptions;
+        if (filter === 'current') {
+            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'active');
+        } else if (filter === 'expired') {
+            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'expired');
+        }
+        // 'all_time' includes all subscriptions (no filtering)
 
         const categoryMap = {};
 
-        subscriptions.forEach(sub => {
+        filteredSubscriptions.forEach(sub => {
             const category = sub.category || 'Other';
-            let monthlyCost = 0;
-
-            if (sub.billingCycle === 'Monthly') {
-                monthlyCost = sub.cost;
-            } else if (sub.billingCycle === 'Yearly') {
-                monthlyCost = sub.cost / 12;
-            } else if (sub.billingCycle === 'Weekly') {
-                monthlyCost = sub.cost * 4;
-            }
+            const monthlyCost = getMonthlyExpense(sub);
 
             if (categoryMap[category]) {
                 categoryMap[category].total += monthlyCost;
@@ -97,23 +197,17 @@ const getMonthlyTrend = async (req, res) => {
 
         for (let i = 11; i >= 0; i--) {
             const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            const month = date.getMonth();
+            const year = date.getFullYear();
             const monthName = date.toLocaleString('default', { month: 'short', year: 'numeric' });
 
             // Calculate spending for this month
             let monthlySpending = 0;
 
             subscriptions.forEach(sub => {
-                const startDate = new Date(sub.startDate);
-
                 // Only include if subscription was active during this month
-                if (startDate <= date && sub.status === 'Active') {
-                    if (sub.billingCycle === 'Monthly') {
-                        monthlySpending += sub.cost;
-                    } else if (sub.billingCycle === 'Yearly') {
-                        monthlySpending += sub.cost / 12;
-                    } else if (sub.billingCycle === 'Weekly') {
-                        monthlySpending += sub.cost * 4;
-                    }
+                if (isActiveInMonth(sub, month, year)) {
+                    monthlySpending += getMonthlyExpense(sub);
                 }
             });
 
@@ -129,27 +223,25 @@ const getMonthlyTrend = async (req, res) => {
     }
 };
 
+
 // @desc    Get top subscriptions by cost
-// @route   GET /api/analytics/top-subscriptions
+// @route   GET /api/analytics/top-subscriptions?limit=5&filter=current|all_time
 // @access  Private
 const getTopSubscriptions = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 5;
-        const subscriptions = await Subscription.find({
-            user: req.user.id,
-            status: 'Active'
-        });
+        const filter = req.query.filter || 'current'; // Default to 'current'
+        const subscriptions = await Subscription.find({ user: req.user.id });
 
-        const subscriptionsWithMonthlyCost = subscriptions.map(sub => {
-            let monthlyCost = 0;
+        // Filter subscriptions based on computed status
+        let filteredSubscriptions = subscriptions;
+        if (filter === 'current') {
+            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'active');
+        }
+        // 'all_time' includes all subscriptions (no filtering)
 
-            if (sub.billingCycle === 'Monthly') {
-                monthlyCost = sub.cost;
-            } else if (sub.billingCycle === 'Yearly') {
-                monthlyCost = sub.cost / 12;
-            } else if (sub.billingCycle === 'Weekly') {
-                monthlyCost = sub.cost * 4;
-            }
+        const subscriptionsWithMonthlyCost = filteredSubscriptions.map(sub => {
+            const monthlyCost = getMonthlyExpense(sub);
 
             return {
                 _id: sub._id,

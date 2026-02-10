@@ -35,6 +35,10 @@ const subscriptionSchema = mongoose.Schema(
             type: Date,
             required: [true, 'Please add the next billing date'],
         },
+        endDate: {
+            type: Date,
+            required: false,
+        },
         status: {
             type: String,
             enum: ['Active', 'Cancelled', 'Expired'],
