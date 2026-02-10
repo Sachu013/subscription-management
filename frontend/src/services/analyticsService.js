@@ -1,6 +1,6 @@
-import axios from 'axios';
+import http from './http';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/analytics';
+const API_URL = '/api/analytics/';
 
 // Get analytics summary
 const getAnalyticsSummary = async (token) => {
@@ -9,7 +9,7 @@ const getAnalyticsSummary = async (token) => {
             Authorization: `Bearer ${token}`,
         },
     };
-    const response = await axios.get(`${API_URL}/summary`, config);
+    const response = await http.get(API_URL + 'summary', config);
     return response.data;
 };
 
@@ -20,7 +20,7 @@ const getCategoryBreakdown = async (token) => {
             Authorization: `Bearer ${token}`,
         },
     };
-    const response = await axios.get(`${API_URL}/category-breakdown`, config);
+    const response = await http.get(API_URL + 'category-breakdown', config);
     return response.data;
 };
 
@@ -31,7 +31,7 @@ const getMonthlyTrend = async (token) => {
             Authorization: `Bearer ${token}`,
         },
     };
-    const response = await axios.get(`${API_URL}/monthly-trend`, config);
+    const response = await http.get(API_URL + 'monthly-trend', config);
     return response.data;
 };
 
@@ -42,7 +42,7 @@ const getTopSubscriptions = async (token, limit = 5) => {
             Authorization: `Bearer ${token}`,
         },
     };
-    const response = await axios.get(`${API_URL}/top-subscriptions?limit=${limit}`, config);
+    const response = await http.get(API_URL + `top-subscriptions?limit=${limit}`, config);
     return response.data;
 };
 
