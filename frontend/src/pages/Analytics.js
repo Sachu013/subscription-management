@@ -5,9 +5,7 @@ import analyticsService from '../services/analyticsService';
 import Spinner from '../components/Spinner';
 import { toast } from 'react-toastify';
 import { PieChart, Pie, LineChart, Line, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { FaArrowLeft, FaChartPie, FaChartLine, FaTrophy } from 'react-icons/fa';
-
-console.log("🔥 NEW ANALYTICS PAGE DEPLOYED - FEATURE 2");
+import { FaArrowLeft, FaChartPie, FaChartLine, FaTrophy, FaChartBar } from 'react-icons/fa';
 
 const Analytics = () => {
     const navigate = useNavigate();
@@ -69,7 +67,12 @@ const Analytics = () => {
                     </button>
                     <h1>Analytics Dashboard</h1>
                 </div>
-                <button onClick={logout} className="btn">Logout</button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={() => navigate('/category-comparison')} className="btn" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                        <FaChartBar style={{ marginRight: '5px' }} /> Category Comparison
+                    </button>
+                    <button onClick={logout} className="btn">Logout</button>
+                </div>
             </header>
 
             {/* Metrics Cards */}

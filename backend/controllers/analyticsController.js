@@ -171,9 +171,49 @@ const getTopSubscriptions = async (req, res) => {
     }
 };
 
+// @desc    Get category comparison
+// @route   GET /api/analytics/category-comparison/:category
+// @access  Private
+const getCategoryComparison = async (req, res) => {
+    try {
+        const category = req.params.category;
+        const subscriptions = await Subscription.find({
+            user: req.user.id,
+            category: category,
+            status: 'Active'
+        });
+
+        const comparisonData = subscriptions.map(sub => {
+            let monthlyCost = 0;
+
+            if (sub.billingCycle === 'Monthly') {
+                monthlyCost = sub.cost;
+            } else if (sub.billingCycle === 'Yearly') {
+                monthlyCost = sub.cost / 12;
+            } else if (sub.billingCycle === 'Weekly') {
+                monthlyCost = sub.cost * 4;
+            }
+
+            return {
+                _id: sub._id,
+                name: sub.name,
+                cost: sub.cost,
+                billingCycle: sub.billingCycle,
+                monthlyCost: parseFloat(monthlyCost.toFixed(2)),
+                startDate: sub.startDate
+            };
+        }).sort((a, b) => b.monthlyCost - a.monthlyCost);
+
+        res.status(200).json(comparisonData);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getAnalyticsSummary,
     getCategoryBreakdown,
     getMonthlyTrend,
-    getTopSubscriptions
+    getTopSubscriptions,
+    getCategoryComparison
 };

@@ -46,11 +46,23 @@ const getTopSubscriptions = async (token, limit = 5) => {
     return response.data;
 };
 
+// Get category comparison
+const getCategoryComparison = async (token, category) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+    const response = await http.get(API_URL + `category-comparison/${encodeURIComponent(category)}`, config);
+    return response.data;
+};
+
 const analyticsService = {
     getAnalyticsSummary,
     getCategoryBreakdown,
     getMonthlyTrend,
-    getTopSubscriptions
+    getTopSubscriptions,
+    getCategoryComparison
 };
 
 export default analyticsService;
