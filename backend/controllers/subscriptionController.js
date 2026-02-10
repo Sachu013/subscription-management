@@ -155,6 +155,9 @@ const getUpcomingPayments = async (req, res) => {
 
         const upcomingPayments = subscriptions
             .filter(sub => {
+                // Skip if nextBillingDate is missing
+                if (!sub.nextBillingDate) return false;
+
                 const nextBilling = new Date(sub.nextBillingDate);
                 nextBilling.setHours(0, 0, 0, 0);
                 return nextBilling >= today && nextBilling <= sevenDaysFromNow;
