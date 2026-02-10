@@ -16,21 +16,15 @@ const app = express();
 app.use(express.json());
 app.use(
     cors({
-        origin: (origin, callback) => {
-            const allowed = process.env.CLIENT_URL;
-            if (!allowed) {
-                return callback(null, true);
-            }
-            if (!origin || origin === allowed) {
-                return callback(null, true);
-            }
-            return callback(new Error('Not allowed by CORS'));
-        },
+        origin: [
+            process.env.CLIENT_URL, // https://subscription-management-one.vercel.app
+        ],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
     })
 );
+
 
 // Basic Route for testing
 app.get('/', (req, res) => {
