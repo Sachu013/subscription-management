@@ -4,8 +4,10 @@ import AuthContext from '../context/AuthContext';
 import analyticsService from '../services/analyticsService';
 import Spinner from '../components/Spinner';
 import { toast } from 'react-toastify';
-import { BarChart, Bar, PieChart, Pie, LineChart, Line, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { FaArrowLeft, FaChartBar, FaChartPie, FaChartLine, FaTrophy } from 'react-icons/fa';
+import { PieChart, Pie, LineChart, Line, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { FaArrowLeft, FaChartPie, FaChartLine, FaTrophy } from 'react-icons/fa';
+
+console.log("🔥 NEW ANALYTICS PAGE DEPLOYED - FEATURE 2");
 
 const Analytics = () => {
     const navigate = useNavigate();
