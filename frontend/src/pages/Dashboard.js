@@ -9,15 +9,12 @@ import { toast } from 'react-toastify';
 import Spinner from '../components/Spinner';
 import {
     FaPlus,
-    FaSignOutAlt,
     FaChartLine,
-    FaFilter,
     FaSort,
     FaBell,
     FaCalendarAlt,
     FaFileAlt,
     FaUserCircle,
-    FaPlusCircle,
     FaWallet,
     FaCheckCircle,
     FaMoon,

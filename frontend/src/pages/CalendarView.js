@@ -12,7 +12,7 @@ const localizer = momentLocalizer(moment);
 
 const CalendarView = () => {
     const navigate = useNavigate();
-    const { theme } = useContext(ThemeContext);
+    useContext(ThemeContext);
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
