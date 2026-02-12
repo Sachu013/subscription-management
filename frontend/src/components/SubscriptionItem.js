@@ -1,5 +1,4 @@
 import React from 'react';
-import { FaBell } from 'react-icons/fa';
 
 const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay }) => {
     const getLifecycleStatus = () => {
