@@ -13,6 +13,35 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit }) => {
         return daysUntilRenewal <= subscription.reminderDays && daysUntilRenewal >= 0;
     };
 
+    const getLifecycleStatus = () => {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+
+        const startDate = new Date(subscription.startDate);
+        startDate.setHours(0, 0, 0, 0);
+
+        // 1. Upcoming (not started)
+        if (now < startDate) return { label: 'Upcoming', color: '#ffc107', icon: '🟡' };
+
+        // 2. Expired
+        if (subscription.endDate) {
+            const endDate = new Date(subscription.endDate);
+            endDate.setHours(0, 0, 0, 0);
+            if (now > endDate) return { label: 'Expired', color: '#ff4d4d', icon: '🔴' };
+        }
+
+        // 3. Upcoming (due soon - 7 days)
+        if (subscription.nextBillingDate) {
+            const nextBilling = new Date(subscription.nextBillingDate);
+            nextBilling.setHours(0, 0, 0, 0);
+            const diffDays = Math.ceil((nextBilling - now) / (1000 * 60 * 60 * 24));
+            if (diffDays >= 0 && diffDays <= 7) return { label: 'Upcoming', color: '#ffc107', icon: '🟡' };
+        }
+
+        return { label: 'Active', color: '#43e97b', icon: '🟢' };
+    };
+
+    const lifecycle = getLifecycleStatus();
     const getDaysUntilRenewal = () => {
         if (!subscription.nextBillingDate) return null;
         const today = new Date();
@@ -57,7 +86,19 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit }) => {
                     🔔 Reminder: {subscription.reminderDays} days before
                 </p>
             )}
-            <p>Status: {subscription.status}</p>
+            <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '4px 12px',
+                borderRadius: '12px',
+                background: 'rgba(255,255,255,0.1)',
+                border: `1px solid ${lifecycle.color}`,
+                margin: '10px 0'
+            }}>
+                <span style={{ fontSize: '10px' }}>{lifecycle.icon}</span>
+                <span style={{ fontSize: '12px', fontWeight: 'bold', color: lifecycle.color }}>{lifecycle.label}</span>
+            </div>
             <div style={{ marginTop: '10px' }}>
                 <button onClick={() => onEdit(subscription)} style={{ marginRight: '10px' }}>Edit</button>
                 <button onClick={() => onDelete(subscription._id)} style={{ backgroundColor: '#ff4d4d', color: 'white' }}>Delete</button>

@@ -14,7 +14,7 @@ const getSubscriptionStatus = (subscription) => {
     const startDate = new Date(subscription.startDate);
     startDate.setHours(0, 0, 0, 0);
 
-    // Check if upcoming
+    // Check if upcoming (not yet started)
     if (now < startDate) {
         return 'upcoming';
     }
@@ -26,6 +26,19 @@ const getSubscriptionStatus = (subscription) => {
 
         if (now > endDate) {
             return 'expired';
+        }
+    }
+
+    // Check if "Upcoming" (due within 7 days)
+    if (subscription.nextBillingDate) {
+        const nextBilling = new Date(subscription.nextBillingDate);
+        nextBilling.setHours(0, 0, 0, 0);
+
+        const diffTime = nextBilling - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays >= 0 && diffDays <= 7) {
+            return 'upcoming';
         }
     }
 

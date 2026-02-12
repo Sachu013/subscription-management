@@ -18,6 +18,10 @@ const Analytics = () => {
     const [monthlyTrend, setMonthlyTrend] = useState([]);
     const [topSubscriptions, setTopSubscriptions] = useState([]);
 
+    // Filter states
+    const [categoryFilter, setCategoryFilter] = useState('current');
+    const [topSubFilter, setTopSubFilter] = useState('current');
+
     useEffect(() => {
         if (!user) {
             navigate('/login');
@@ -28,18 +32,13 @@ const Analytics = () => {
                     const token = storedUser ? storedUser.token : null;
 
                     if (token) {
-                        // Fetch all analytics data from backend
-                        const [summary, categories, trend, top] = await Promise.all([
+                        // Fetch metrics and trend once (not affected by current filters)
+                        const [summary, trend] = await Promise.all([
                             analyticsService.getAnalyticsSummary(token),
-                            analyticsService.getCategoryBreakdown(token),
-                            analyticsService.getMonthlyTrend(token),
-                            analyticsService.getTopSubscriptions(token, 5)
+                            analyticsService.getMonthlyTrend(token)
                         ]);
-
                         setMetrics(summary);
-                        setCategoryData(categories);
                         setMonthlyTrend(trend);
-                        setTopSubscriptions(top);
                     }
                 } catch (error) {
                     const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
@@ -51,6 +50,32 @@ const Analytics = () => {
             fetchAnalytics();
         }
     }, [user, navigate]);
+
+    // Refetch Category Breakdown when filter changes
+    useEffect(() => {
+        const fetchCategoryData = async () => {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            const token = storedUser?.token;
+            if (token) {
+                const data = await analyticsService.getCategoryBreakdown(token, categoryFilter);
+                setCategoryData(data);
+            }
+        };
+        fetchCategoryData();
+    }, [categoryFilter]);
+
+    // Refetch Top Subscriptions when filter changes
+    useEffect(() => {
+        const fetchTopSubs = async () => {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            const token = storedUser?.token;
+            if (token) {
+                const data = await analyticsService.getTopSubscriptions(token, 5, topSubFilter);
+                setTopSubscriptions(data);
+            }
+        };
+        fetchTopSubs();
+    }, [topSubFilter]);
 
     const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#fee140', '#30cfd0'];
 
@@ -176,9 +201,27 @@ const Analytics = () => {
                     borderRadius: '15px',
                     border: '1px solid rgba(255, 255, 255, 0.2)'
                 }}>
-                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', fontSize: '20px' }}>
-                        <FaChartPie /> Category-wise Spending
-                    </h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', margin: 0 }}>
+                            <FaChartPie /> Category-wise Spending
+                        </h2>
+                        <select
+                            value={categoryFilter}
+                            onChange={(e) => setCategoryFilter(e.target.value)}
+                            style={{
+                                background: 'rgba(255,255,255,0.1)',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                borderRadius: '8px',
+                                color: '#fff',
+                                padding: '5px 10px',
+                                outline: 'none'
+                            }}
+                        >
+                            <option value="current" style={{ background: '#333' }}>Current</option>
+                            <option value="all_time" style={{ background: '#333' }}>All Time</option>
+                            <option value="expired" style={{ background: '#333' }}>Expired</option>
+                        </select>
+                    </div>
                     {categoryData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
@@ -228,9 +271,41 @@ const Analytics = () => {
                     borderRadius: '15px',
                     border: '1px solid rgba(255, 255, 255, 0.2)'
                 }}>
-                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', fontSize: '20px' }}>
-                        <FaTrophy /> Top 5 Subscriptions by Cost
-                    </h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', margin: 0 }}>
+                            <FaTrophy /> Top 5 Subscriptions
+                        </h2>
+                        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', padding: '2px' }}>
+                            <button
+                                onClick={() => setTopSubFilter('current')}
+                                style={{
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '5px 12px',
+                                    fontSize: '12px',
+                                    cursor: 'pointer',
+                                    background: topSubFilter === 'current' ? '#667eea' : 'transparent',
+                                    color: '#fff'
+                                }}
+                            >
+                                Current
+                            </button>
+                            <button
+                                onClick={() => setTopSubFilter('all_time')}
+                                style={{
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '5px 12px',
+                                    fontSize: '12px',
+                                    cursor: 'pointer',
+                                    background: topSubFilter === 'all_time' ? '#667eea' : 'transparent',
+                                    color: '#fff'
+                                }}
+                            >
+                                All Time
+                            </button>
+                        </div>
+                    </div>
                     {topSubscriptions.length > 0 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             {topSubscriptions.map((sub, index) => (
