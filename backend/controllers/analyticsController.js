@@ -8,11 +8,29 @@ const {
 
 // Helper to get filtered subscriptions for analytics
 const getFilteredSubscriptions = async (req) => {
-    const { status, category } = req.query;
+    const { status, category, search, billingCycle, minPrice, maxPrice } = req.query;
     let query = { user: req.user.id };
 
+    // Search by name (case-insensitive)
+    if (search) {
+        query.name = { $regex: search, $options: 'i' };
+    }
+
+    // Category filter (if not "All")
     if (category && category !== 'All') {
         query.category = category;
+    }
+
+    // Billing Cycle filter (if not "All")
+    if (billingCycle && billingCycle !== 'All') {
+        query.billingCycle = billingCycle;
+    }
+
+    // Price range filter
+    if (minPrice || maxPrice) {
+        query.price = {};
+        if (minPrice) query.price.$gte = Number(minPrice);
+        if (maxPrice) query.price.$lte = Number(maxPrice);
     }
 
     let subscriptions = await Subscription.find(query);
