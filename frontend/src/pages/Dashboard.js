@@ -18,7 +18,9 @@ import {
     FaWallet,
     FaCheckCircle,
     FaMoon,
-    FaSun
+    FaSun,
+    FaBars,
+    FaTimes
 } from 'react-icons/fa';
 import SubscriptionItem from '../components/SubscriptionItem';
 import SubscriptionForm from '../components/SubscriptionForm';
@@ -60,6 +62,7 @@ const Dashboard = () => {
     const [currentSubscription, setCurrentSubscription] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [budgetData, setBudgetData] = useState({
         budget: { monthlyLimit: 0 },
         monthlySpending: 0,
@@ -313,10 +316,12 @@ const Dashboard = () => {
         <section className="dashboard">
             <header>
                 <div>
-                    <h1 style={{ fontSize: '1.6rem' }}>Welcome, {user && user.username}</h1>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Here's your subscription overview</p>
+                    <h1 style={{ fontSize: 'clamp(1.2rem, 5vw, 1.6rem)' }}>Welcome, {user && user.username}</h1>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Overview</p>
                 </div>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+
+                {/* Desktop Navigation */}
+                <div className="nav-desktop" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     <button
                         onClick={toggleTheme}
                         className="btn"
@@ -329,7 +334,9 @@ const Dashboard = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: 'none'
+                            boxShadow: 'none',
+                            width: '44px',
+                            height: '44px'
                         }}
                         title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
                     >
@@ -357,7 +364,9 @@ const Dashboard = () => {
                                 background: 'var(--background)',
                                 border: '1px solid var(--border-color)',
                                 position: 'relative',
-                                color: 'var(--text-primary)'
+                                color: 'var(--text-primary)',
+                                width: '44px',
+                                height: '44px'
                             }}
                         >
                             <FaBell />
@@ -385,7 +394,7 @@ const Dashboard = () => {
                                 position: 'absolute',
                                 top: '55px',
                                 right: '0',
-                                width: '340px',
+                                width: '300px',
                                 background: 'var(--card-bg)',
                                 border: '1px solid var(--border-color)',
                                 borderRadius: '16px',
@@ -437,13 +446,90 @@ const Dashboard = () => {
                         padding: '12px',
                         background: 'var(--background)',
                         color: 'var(--text-primary)',
-                        border: '1px solid var(--border-color)'
+                        border: '1px solid var(--border-color)',
+                        width: '44px',
+                        height: '44px'
                     }}>
                         <FaUserCircle />
                     </button>
                     <button onClick={handleLogout} className="btn" style={{ background: 'var(--danger)', color: '#fff' }}>Logout</button>
                 </div>
+
+                {/* Mobile Navigation Toggle */}
+                <button
+                    className="nav-mobile-toggle"
+                    onClick={() => setIsMobileMenuOpen(true)}
+                >
+                    <FaBars />
+                </button>
             </header>
+
+            {/* Mobile Nav Drawer */}
+            {isMobileMenuOpen && (
+                <div className="mobile-nav-overlay" onClick={() => setIsMobileMenuOpen(false)}>
+                    <div
+                        className={`mobile-nav-drawer ${isMobileMenuOpen ? 'open' : ''}`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <h2 style={{ fontSize: '1.2rem', color: 'var(--primary)', margin: 0 }}>Menu</h2>
+                            <button
+                                className="btn"
+                                style={{ background: 'transparent', color: 'var(--text-primary)', padding: 0, width: '44px', height: '44px' }}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                <FaTimes />
+                            </button>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <button
+                                onClick={() => { navigate('/analytics'); setIsMobileMenuOpen(false); }}
+                                className="btn btn-secondary"
+                                style={{ width: '100%', justifyContent: 'flex-start', gap: '15px' }}
+                            >
+                                <FaChartLine /> Analytics
+                            </button>
+                            <button
+                                onClick={() => { navigate('/calendar'); setIsMobileMenuOpen(false); }}
+                                className="btn btn-secondary"
+                                style={{ width: '100%', justifyContent: 'flex-start', gap: '15px' }}
+                            >
+                                <FaCalendarAlt /> Calendar
+                            </button>
+                            <button
+                                onClick={() => { navigate('/reports'); setIsMobileMenuOpen(false); }}
+                                className="btn btn-secondary"
+                                style={{ width: '100%', justifyContent: 'flex-start', gap: '15px' }}
+                            >
+                                <FaFileAlt /> Reports
+                            </button>
+                            <button
+                                onClick={() => { navigate('/profile'); setIsMobileMenuOpen(false); }}
+                                className="btn btn-secondary"
+                                style={{ width: '100%', justifyContent: 'flex-start', gap: '15px' }}
+                            >
+                                <FaUserCircle /> Profile & Settings
+                            </button>
+                            <div style={{ height: '1px', background: 'var(--border-color)', margin: '10px 0' }} />
+                            <button
+                                onClick={() => { toggleTheme(); }}
+                                className="btn btn-secondary"
+                                style={{ width: '100%', justifyContent: 'flex-start', gap: '15px' }}
+                            >
+                                {theme === 'light' ? <FaMoon /> : <FaSun />} {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                            </button>
+                            <button
+                                onClick={handleLogout}
+                                className="btn"
+                                style={{ width: '100%', background: 'var(--danger)', color: '#fff', marginTop: '20px' }}
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Upcoming Payment Alerts */}
             {!showForm && upcomingPayments.length > 0 && (

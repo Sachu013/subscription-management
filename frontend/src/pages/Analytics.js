@@ -85,21 +85,15 @@ const Analytics = () => {
 
     return (
         <section className="dashboard">
-            <header style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                borderBottom: '1px solid var(--border-color)',
-                paddingBottom: '20px',
-                marginBottom: '30px'
-            }}>
+            <header className="header-responsive">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <button
                         onClick={() => navigate('/')}
                         className="btn"
                         style={{
                             borderRadius: '50%',
-                            padding: '10px',
+                            width: '44px',
+                            height: '44px',
                             background: 'var(--background)',
                             color: 'var(--text-primary)',
                             border: '1px solid var(--border-color)',
@@ -110,13 +104,13 @@ const Analytics = () => {
                     >
                         <FaArrowLeft />
                     </button>
-                    <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>Analytics Dashboard</h1>
+                    <h1 style={{ margin: 0, fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', color: 'var(--primary)' }}>Analytics</h1>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={() => navigate('/category-comparison')} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button onClick={() => navigate('/category-comparison')} className="btn btn-secondary nav-desktop" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaChartBar /> Comparison
                     </button>
-                    <button onClick={logout} className="btn">Logout</button>
+                    <button onClick={logout} className="btn nav-desktop">Logout</button>
                 </div>
             </header>
 
@@ -209,7 +203,7 @@ const Analytics = () => {
 
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(280px, 100%, 400px), 1fr))',
                 gap: '20px',
                 marginBottom: '30px'
             }}>

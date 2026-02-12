@@ -70,44 +70,38 @@ const CalendarView = () => {
     if (isLoading) return <Spinner />;
 
     return (
-        <div className="calendar-container" style={{ padding: '30px', color: 'var(--text-primary)' }}>
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '20px',
-                marginBottom: '30px',
-                background: 'var(--card-bg)',
-                padding: '20px',
-                borderRadius: '16px',
-                border: '1px solid var(--border-color)',
-                boxShadow: 'var(--shadow)'
-            }}>
-                <button
-                    onClick={() => navigate('/')}
-                    className="btn"
-                    style={{
-                        background: 'var(--background)',
-                        color: 'var(--text-primary)',
-                        borderRadius: '50%',
-                        padding: '10px',
-                        border: '1px solid var(--border-color)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                >
-                    <FaArrowLeft />
-                </button>
-                <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>Upcoming Payments</h1>
-            </div>
+        <div className="dashboard" style={{ padding: '0', color: 'var(--text-primary)' }}>
+            <header className="header-responsive" style={{ marginBottom: '30px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <button
+                        onClick={() => navigate('/')}
+                        className="btn"
+                        style={{
+                            background: 'var(--background)',
+                            color: 'var(--text-primary)',
+                            borderRadius: '50%',
+                            width: '44px',
+                            height: '44px',
+                            border: '1px solid var(--border-color)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <FaArrowLeft />
+                    </button>
+                    <h1 style={{ margin: 0, fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', color: 'var(--primary)' }}>Calendar</h1>
+                </div>
+            </header>
 
             <div style={{
                 background: 'var(--card-bg)',
-                padding: '25px',
+                padding: '15px',
                 borderRadius: '16px',
-                height: '700px',
+                height: 'clamp(500px, 85vh, 750px)',
                 border: '1px solid var(--border-color)',
-                boxShadow: 'var(--shadow)'
+                boxShadow: 'var(--shadow)',
+                overflow: 'hidden'
             }}>
                 <Calendar
                     localizer={localizer}
@@ -170,6 +164,16 @@ const CalendarView = () => {
                     }
                     .rbc-month-row {
                       border-top: 1px solid var(--border-color);
+                    }
+                    @media (max-width: 768px) {
+                        .rbc-toolbar {
+                            flex-direction: column;
+                            gap: 10px;
+                        }
+                        .rbc-toolbar-label {
+                            margin: 5px 0;
+                            font-weight: bold;
+                        }
                     }
                 `}
             </style>

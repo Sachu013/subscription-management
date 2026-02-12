@@ -19,7 +19,6 @@ body {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
 }
 
 /* Header */
@@ -104,11 +103,15 @@ select option {
 }
 
 .btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--primary);
   color: #fff;
   border: none;
-  padding: 12px 25px;
+  padding: 0 25px;
+  height: 44px;
+  /* Minimum touch target height */
   cursor: pointer;
   border-radius: 12px;
   font-size: 15px;
@@ -116,6 +119,25 @@ select option {
   transition: all 0.2s ease;
   text-align: center;
   border: 1px solid transparent;
+  user-select: none;
+}
+
+.header-responsive {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding: 15px 20px;
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 25px;
+}
+
+@media (max-width: 768px) {
+  .header-responsive {
+    padding: 12px 15px;
+  }
 }
 
 .btn-block {
@@ -183,11 +205,18 @@ select option {
   color: var(--primary);
 }
 
-/* Subscriptions */
+/* Subscriptions Grid - Mobile First */
 .subscriptions {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .subscriptions {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
 }
 
 .subscription-item {
@@ -314,5 +343,45 @@ select option {
   .auth-container {
     margin: 40px auto;
     padding: 25px 20px;
+  }
+}
+/* Responsive Table */
+@media (max-width: 768px) {
+  .responsive-table thead {
+    display: none;
+  }
+
+  .responsive-table tr {
+    display: block;
+    margin-bottom: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  .responsive-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px !important;
+    border-bottom: 1px solid var(--background);
+    text-align: right !important;
+  }
+
+  .responsive-table td:last-child {
+    border-bottom: none;
+  }
+
+  .responsive-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-align: left;
+    margin-right: 15px;
   }
 }

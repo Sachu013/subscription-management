@@ -110,25 +110,16 @@ const PaymentHistory = () => {
     if (isLoading) return <Spinner />;
 
     return (
-        <div style={{ padding: '30px', color: 'var(--text-primary)' }}>
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '30px',
-                background: 'var(--card-bg)',
-                padding: '20px',
-                borderRadius: '16px',
-                border: '1px solid var(--border-color)',
-                boxShadow: 'var(--shadow)'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <div className="dashboard" style={{ padding: '0', color: 'var(--text-primary)' }}>
+            <header className="header-responsive" style={{ marginBottom: '30px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <button
                         onClick={() => navigate('/')}
                         className="btn"
                         style={{
                             borderRadius: '50%',
-                            padding: '10px',
+                            width: '44px',
+                            height: '44px',
                             background: 'var(--background)',
                             color: 'var(--text-primary)',
                             border: '1px solid var(--border-color)',
@@ -139,17 +130,17 @@ const PaymentHistory = () => {
                     >
                         <FaArrowLeft />
                     </button>
-                    <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>{subscription?.name} History</h1>
+                    <h1 style={{ margin: 0, fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', color: 'var(--primary)' }}>History</h1>
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                    <button onClick={handleExport} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={handleExport} className="btn btn-secondary nav-desktop" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaDownload /> Export
                     </button>
                     <button onClick={() => setShowModal(true)} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FaPlus /> Add Payment
+                        <FaPlus /> <span className="nav-desktop">Add Payment</span>
                     </button>
                 </div>
-            </div>
+            </header>
 
             <div style={{
                 background: 'var(--card-bg)',
@@ -158,14 +149,14 @@ const PaymentHistory = () => {
                 border: '1px solid var(--border-color)',
                 boxShadow: 'var(--shadow)'
             }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <table className="responsive-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
-                        <tr style={{ background: 'var(--secondary)', color: '#2c2c2c' }}>
-                            <th style={{ padding: '18px' }}>Date</th>
-                            <th style={{ padding: '18px' }}>Amount</th>
-                            <th style={{ padding: '18px' }}>Method</th>
-                            <th style={{ padding: '18px' }}>Notes</th>
-                            <th style={{ padding: '18px' }}>Actions</th>
+                        <tr style={{ background: 'var(--background)', color: 'var(--text-primary)' }}>
+                            <th style={{ padding: '10px 18px' }}>Date</th>
+                            <th style={{ padding: '10px 18px' }}>Amount</th>
+                            <th style={{ padding: '10px 18px' }}>Method</th>
+                            <th style={{ padding: '10px 18px' }}>Notes</th>
+                            <th style={{ padding: '10px 18px' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -174,9 +165,9 @@ const PaymentHistory = () => {
                         ) : (
                             payments.map(p => (
                                 <tr key={p._id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s' }}>
-                                    <td style={{ padding: '16px' }}>{new Date(p.paymentDate).toLocaleDateString()}</td>
-                                    <td style={{ padding: '16px', fontWeight: 'bold', color: 'var(--primary)' }}>₹{p.amount}</td>
-                                    <td style={{ padding: '16px' }}>
+                                    <td style={{ padding: '16px' }} data-label="Date">{new Date(p.paymentDate).toLocaleDateString()}</td>
+                                    <td style={{ padding: '16px', fontWeight: 'bold', color: 'var(--primary)' }} data-label="Amount">₹{p.amount}</td>
+                                    <td style={{ padding: '16px' }} data-label="Method">
                                         <span style={{
                                             background: 'var(--background)',
                                             padding: '4px 10px',
@@ -187,10 +178,10 @@ const PaymentHistory = () => {
                                             {p.method}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>{p.notes || '-'}</td>
-                                    <td style={{ padding: '16px', display: 'flex', gap: '15px' }}>
-                                        <button onClick={() => openEdit(p)} style={{ background: 'none', border: 'none', color: '#ff9800', cursor: 'pointer', fontSize: '1.1rem' }}><FaEdit /></button>
-                                        <button onClick={() => handleDelete(p._id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '1.1rem' }}><FaTrash /></button>
+                                    <td style={{ padding: '16px', fontSize: '13px', color: 'var(--text-secondary)' }} data-label="Notes">{p.notes || '-'}</td>
+                                    <td style={{ padding: '16px', display: 'flex', gap: '15px' }} data-label="Actions">
+                                        <button onClick={() => openEdit(p)} style={{ background: 'none', border: 'none', color: '#ff9800', cursor: 'pointer', fontSize: '1.1rem', padding: '10px' }}><FaEdit /></button>
+                                        <button onClick={() => handleDelete(p._id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '1.1rem', padding: '10px' }}><FaTrash /></button>
                                     </td>
                                 </tr>
                             ))

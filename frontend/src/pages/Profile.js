@@ -41,21 +41,15 @@ const Profile = () => {
 
     return (
         <section className="dashboard">
-            <header style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                borderBottom: '1px solid var(--border-color)',
-                paddingBottom: '20px',
-                marginBottom: '30px'
-            }}>
+            <header className="header-responsive">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <button
                         onClick={() => navigate('/')}
                         className="btn"
                         style={{
                             borderRadius: '50%',
-                            padding: '10px',
+                            width: '44px',
+                            height: '44px',
                             background: 'var(--background)',
                             color: 'var(--text-primary)',
                             border: '1px solid var(--border-color)',
@@ -66,14 +60,14 @@ const Profile = () => {
                     >
                         <FaArrowLeft />
                     </button>
-                    <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>Profile & Settings</h1>
+                    <h1 style={{ margin: 0, fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', color: 'var(--primary)' }}>Profile</h1>
                 </div>
-                <button onClick={logout} className="btn">Logout</button>
+                <button onClick={logout} className="btn nav-desktop">Logout</button>
             </header>
 
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(280px, 100%, 400px), 1fr))',
                 gap: '20px',
                 marginBottom: '30px'
             }}>
