@@ -14,34 +14,27 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit }) => {
     };
 
     const getLifecycleStatus = () => {
-        // 0. Respect manual status field first
-        if (subscription.status === 'Cancelled') return { label: 'Cancelled', color: '#ff4d4d', icon: '🔴' };
-        if (subscription.status === 'Expired') return { label: 'Expired', color: '#ff4d4d', icon: '🔴' };
-
         const now = new Date();
         now.setHours(0, 0, 0, 0);
 
         const startDate = new Date(subscription.startDate);
         startDate.setHours(0, 0, 0, 0);
 
-        // 1. Upcoming (not started)
-        if (now < startDate) return { label: 'Upcoming', color: '#ffc107', icon: '🟡' };
+        // 1. Upcoming: startDate > today
+        if (startDate > now) {
+            return { label: 'Upcoming', color: '#ffc107', icon: '🟡' };
+        }
 
-        // 2. Expired (by date)
+        // 2. Expired: endDate exists AND endDate < today
         if (subscription.endDate) {
             const endDate = new Date(subscription.endDate);
             endDate.setHours(0, 0, 0, 0);
-            if (now > endDate) return { label: 'Expired', color: '#ff4d4d', icon: '🔴' };
+            if (endDate < now) {
+                return { label: 'Expired', color: '#ff4d4d', icon: '🔴' };
+            }
         }
 
-        // 3. Upcoming (due soon - 7 days)
-        if (subscription.nextBillingDate) {
-            const nextBilling = new Date(subscription.nextBillingDate);
-            nextBilling.setHours(0, 0, 0, 0);
-            const diffDays = Math.ceil((nextBilling - now) / (1000 * 60 * 60 * 24));
-            if (diffDays >= 0 && diffDays <= 7) return { label: 'Upcoming', color: '#ffc107', icon: '🟡' };
-        }
-
+        // 3. Active: Otherwise
         return { label: 'Active', color: '#43e97b', icon: '🟢' };
     };
 
@@ -104,7 +97,7 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit }) => {
                 margin: '10px 0'
             }}>
                 <span style={{ fontSize: '10px' }}>{lifecycle.icon}</span>
-                <span style={{ fontSize: '12px', fontWeight: 'bold', color: lifecycle.color }}>{lifecycle.label} ({subscription.status})</span>
+                <span style={{ fontSize: '12px', fontWeight: 'bold', color: lifecycle.color }}>{lifecycle.label}</span>
             </div>
             <div style={{ marginTop: '10px' }}>
                 <button onClick={() => onEdit(subscription)} style={{ marginRight: '10px' }}>Edit</button>

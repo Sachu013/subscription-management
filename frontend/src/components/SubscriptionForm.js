@@ -10,7 +10,6 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
         billingCycle: 'Monthly',
         nextBillingDate: '',
         endDate: '',
-        status: 'Active',
         reminderEnabled: false,
         reminderDays: 7
     });
@@ -26,13 +25,12 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
                 ...initialData,
                 startDate: formattedStart,
                 nextBillingDate: formattedNext,
-                endDate: formattedEnd || '',
-                status: initialData.status || 'Active'
+                endDate: formattedEnd || ''
             });
         }
     }, [initialData, isEditMode]);
 
-    const { name, category, cost, startDate, billingCycle, nextBillingDate, endDate, status, reminderEnabled, reminderDays } = formData;
+    const { name, category, cost, startDate, billingCycle, nextBillingDate, endDate, reminderEnabled, reminderDays } = formData;
 
     const onChange = (e) => {
         const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -51,19 +49,9 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
         <section className="form">
             <h2>{isEditMode ? 'Edit Subscription' : 'Add New Subscription'}</h2>
             <form onSubmit={onSubmit}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                    <div className="form-group">
-                        <label>Service Name</label>
-                        <input type="text" name="name" value={name} onChange={onChange} required />
-                    </div>
-                    <div className="form-group">
-                        <label>Status</label>
-                        <select name="status" value={status} onChange={onChange}>
-                            <option value="Active">Active</option>
-                            <option value="Cancelled">Cancelled</option>
-                            <option value="Expired">Expired</option>
-                        </select>
-                    </div>
+                <div className="form-group">
+                    <label>Service Name</label>
+                    <input type="text" name="name" value={name} onChange={onChange} required />
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>

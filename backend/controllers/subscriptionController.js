@@ -44,7 +44,6 @@ const createSubscription = async (req, res) => {
             billingCycle,
             nextBillingDate,
             endDate,
-            status,
         });
 
         res.status(201).json(subscription);
@@ -144,10 +143,7 @@ const deleteSubscription = async (req, res) => {
 // @access  Private
 const getUpcomingPayments = async (req, res) => {
     try {
-        const subscriptions = await Subscription.find({
-            user: req.user.id,
-            status: 'Active'
-        });
+        const subscriptions = await Subscription.find({ user: req.user.id });
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -157,7 +153,19 @@ const getUpcomingPayments = async (req, res) => {
 
         const upcomingPayments = subscriptions
             .filter(sub => {
-                // Skip if nextBillingDate is missing
+                // 1. Must be dynamic "Active"
+                const startDate = new Date(sub.startDate);
+                startDate.setHours(0, 0, 0, 0);
+
+                if (startDate > today) return false; // Not yet started
+
+                if (sub.endDate) {
+                    const endDate = new Date(sub.endDate);
+                    endDate.setHours(0, 0, 0, 0);
+                    if (endDate < today) return false; // Already ended
+                }
+
+                // 2. Check if nextBillingDate is within next 7 days
                 if (!sub.nextBillingDate) return false;
 
                 const nextBilling = new Date(sub.nextBillingDate);

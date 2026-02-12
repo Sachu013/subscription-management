@@ -312,8 +312,8 @@ const Dashboard = () => {
             {!showForm && (
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: '20px',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                    gap: '15px',
                     marginBottom: '30px'
                 }}>
                     <div style={{
@@ -330,6 +330,7 @@ const Dashboard = () => {
                         <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Active</h3>
                         <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#667eea', margin: 0 }}>{analyticsSummary.activeCount}</p>
                     </div>
+
                     <div style={{
                         background: 'linear-gradient(135deg, rgba(67, 233, 123, 0.2) 0%, rgba(56, 239, 125, 0.2) 100%)',
                         backdropFilter: 'blur(10px)',
@@ -344,9 +345,10 @@ const Dashboard = () => {
                         <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Current Month Spending</h3>
                         <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#43e97b', margin: '0 0 5px 0' }}>₹{analyticsSummary.monthlyTotal}</p>
                         <span style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.6)', fontStyle: 'italic' }}>
-                            Active in Current Month Only
+                            Dynamic Calculation
                         </span>
                     </div>
+
                     <div style={{
                         background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 193, 7, 0.2) 100%)',
                         backdropFilter: 'blur(10px)',
@@ -358,9 +360,20 @@ const Dashboard = () => {
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
                             <FaBell style={{ fontSize: '32px', color: '#ff9800' }} />
                         </div>
-                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Upcoming (7 Days)</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{analyticsSummary.upcomingCount}</p>
+                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Upcoming</h3>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', alignItems: 'center' }}>
+                            <div>
+                                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{analyticsSummary.upcomingCount}</p>
+                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Total</p>
+                            </div>
+                            <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.2)' }}></div>
+                            <div>
+                                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#43e97b', margin: 0 }}>{analyticsSummary.upcomingDueSoonCount || 0}</p>
+                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Due Soon</p>
+                            </div>
+                        </div>
                     </div>
+
                     <div style={{
                         background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 68, 68, 0.2) 100%)',
                         backdropFilter: 'blur(10px)',
@@ -370,7 +383,7 @@ const Dashboard = () => {
                         textAlign: 'center'
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-                            <FaBell style={{ fontSize: '32px', color: '#ff6b6b' }} />
+                            <FaFileAlt style={{ fontSize: '32px', color: '#ff6b6b' }} />
                         </div>
                         <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Expired</h3>
                         <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff6b6b', margin: 0 }}>{analyticsSummary.expiredCount}</p>
