@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import paymentService from '../services/paymentService';
 import subscriptionService from '../services/subscriptionService';
-import AuthContext from '../context/AuthContext';
+
 import Spinner from '../components/Spinner';
 import { FaArrowLeft, FaDownload, FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -10,7 +10,7 @@ import { toast } from 'react-toastify';
 const PaymentHistory = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { user } = useContext(AuthContext);
+
 
     const [subscription, setSubscription] = useState(null);
     const [payments, setPayments] = useState([]);
