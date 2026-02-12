@@ -41,12 +41,32 @@ const Profile = () => {
 
     return (
         <section className="dashboard">
-            <header style={{ marginBottom: '30px' }}>
+            <header style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: '1px solid var(--border-color)',
+                paddingBottom: '20px',
+                marginBottom: '30px'
+            }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <button onClick={() => navigate('/')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <FaArrowLeft /> Back
+                    <button
+                        onClick={() => navigate('/')}
+                        className="btn"
+                        style={{
+                            borderRadius: '50%',
+                            padding: '10px',
+                            background: 'var(--background)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--border-color)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <FaArrowLeft />
                     </button>
-                    <h1>Profile & Settings</h1>
+                    <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>Profile & Settings</h1>
                 </div>
                 <button onClick={logout} className="btn">Logout</button>
             </header>
@@ -59,143 +79,112 @@ const Profile = () => {
             }}>
                 {/* User Information Card */}
                 <div style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
+                    background: 'var(--card-bg)',
                     padding: '30px',
-                    borderRadius: '15px',
-                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                    borderRadius: '16px',
+                    border: '1px solid var(--border-color)',
+                    boxShadow: 'var(--shadow)'
                 }}>
-                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px', fontSize: '22px' }}>
+                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px', fontSize: '1.2rem', color: 'var(--primary)' }}>
                         <FaUser /> User Information
                     </h2>
 
-                    <div style={{ marginBottom: '20px' }}>
+                    <div style={{ marginBottom: '25px' }}>
                         <label style={{
                             display: 'block',
-                            fontSize: '14px',
-                            color: 'rgba(255, 255, 255, 0.7)',
-                            marginBottom: '8px'
+                            fontSize: '13px',
+                            color: 'var(--text-secondary)',
+                            marginBottom: '10px'
                         }}>
-                            Name
+                            Username
                         </label>
                         <div style={{
-                            background: 'rgba(255, 255, 255, 0.05)',
+                            background: 'var(--background)',
                             padding: '12px 15px',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                            fontSize: '16px'
+                            borderRadius: '12px',
+                            border: '1px solid var(--border-color)',
+                            fontSize: '15px',
+                            color: 'var(--text-primary)'
                         }}>
                             {user.username}
                         </div>
                     </div>
 
-                    <div style={{ marginBottom: '20px' }}>
+                    <div style={{ marginBottom: '25px' }}>
                         <label style={{
                             display: 'block',
-                            fontSize: '14px',
-                            color: 'rgba(255, 255, 255, 0.7)',
-                            marginBottom: '8px'
+                            fontSize: '13px',
+                            color: 'var(--text-secondary)',
+                            marginBottom: '10px'
                         }}>
-                            Email
+                            Email Address
                         </label>
                         <div style={{
-                            background: 'rgba(255, 255, 255, 0.05)',
+                            background: 'var(--background)',
                             padding: '12px 15px',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                            fontSize: '16px'
+                            borderRadius: '12px',
+                            border: '1px solid var(--border-color)',
+                            fontSize: '15px',
+                            color: 'var(--text-primary)'
                         }}>
                             {user.email}
                         </div>
                     </div>
 
                     <div style={{
-                        marginTop: '25px',
+                        marginTop: '30px',
                         padding: '15px',
-                        background: 'rgba(102, 126, 234, 0.1)',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(102, 126, 234, 0.3)'
+                        background: 'var(--secondary)',
+                        borderRadius: '12px',
+                        border: '1px solid var(--border-color)',
+                        opacity: 0.8
                     }}>
-                        <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.8)', margin: 0 }}>
-                            💡 To update your name or email, please contact support.
+                        <p style={{ fontSize: '13px', color: '#2c2c2c', margin: 0, textAlign: 'center' }}>
+                            💡 Account details are managed via your provider.
                         </p>
                     </div>
                 </div>
 
                 {/* Settings Card */}
                 <div style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
+                    background: 'var(--card-bg)',
                     padding: '30px',
-                    borderRadius: '15px',
-                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                    borderRadius: '16px',
+                    border: '1px solid var(--border-color)',
+                    boxShadow: 'var(--shadow)'
                 }}>
-                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px', fontSize: '22px' }}>
+                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px', fontSize: '1.2rem', color: 'var(--primary)' }}>
                         <FaCog /> Preferences
                     </h2>
 
-                    <div style={{ marginBottom: '25px' }}>
-                        <label style={{
-                            display: 'block',
-                            fontSize: '14px',
-                            color: 'rgba(255, 255, 255, 0.7)',
-                            marginBottom: '8px'
-                        }}>
-                            Preferred Currency
-                        </label>
+                    <div className="form-group" style={{ marginBottom: '25px' }}>
+                        <label>Preferred Currency</label>
                         <select
                             value={currency}
                             onChange={(e) => setCurrency(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '12px 15px',
-                                borderRadius: '8px',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                color: '#fff',
-                                fontSize: '16px',
-                                cursor: 'pointer'
-                            }}
                         >
-                            <option value="INR" style={{ background: '#2a2a2a' }}>INR (₹)</option>
-                            <option value="USD" style={{ background: '#2a2a2a' }}>USD ($)</option>
-                            <option value="EUR" style={{ background: '#2a2a2a' }}>EUR (€)</option>
-                            <option value="GBP" style={{ background: '#2a2a2a' }}>GBP (£)</option>
+                            <option value="INR">INR (₹)</option>
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="GBP">GBP (£)</option>
                         </select>
-                        <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '8px' }}>
-                            This will be used as the default currency for new subscriptions
+                        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                            Default currency for new entries.
                         </p>
                     </div>
 
-                    <div style={{ marginBottom: '25px' }}>
-                        <label style={{
-                            display: 'block',
-                            fontSize: '14px',
-                            color: 'rgba(255, 255, 255, 0.7)',
-                            marginBottom: '8px'
-                        }}>
-                            Default Reminder Time
-                        </label>
+                    <div className="form-group" style={{ marginBottom: '25px' }}>
+                        <label>Default Reminder</label>
                         <select
                             value={defaultReminderDays}
                             onChange={(e) => setDefaultReminderDays(Number(e.target.value))}
-                            style={{
-                                width: '100%',
-                                padding: '12px 15px',
-                                borderRadius: '8px',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                color: '#fff',
-                                fontSize: '16px',
-                                cursor: 'pointer'
-                            }}
                         >
-                            <option value={3} style={{ background: '#2a2a2a' }}>3 days before renewal</option>
-                            <option value={7} style={{ background: '#2a2a2a' }}>7 days before renewal</option>
-                            <option value={14} style={{ background: '#2a2a2a' }}>14 days before renewal</option>
+                            <option value={3}>3 days before</option>
+                            <option value={7}>7 days before</option>
+                            <option value={14}>14 days before</option>
                         </select>
-                        <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '8px' }}>
-                            This will be pre-selected when creating new subscriptions
+                        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                            Auto-selected for new subscriptions.
                         </p>
                     </div>
 
@@ -206,43 +195,43 @@ const Profile = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '8px',
+                            gap: '10px',
                             marginTop: '30px'
                         }}
                     >
-                        <FaSave /> Save Settings
+                        <FaSave /> Save Changes
                     </button>
                 </div>
             </div>
 
             {/* Additional Info Section */}
             <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
+                background: 'var(--card-bg)',
                 padding: '25px',
-                borderRadius: '15px',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
+                borderRadius: '16px',
+                border: '1px solid var(--border-color)',
+                boxShadow: 'var(--shadow)'
             }}>
-                <h3 style={{ marginBottom: '15px', fontSize: '18px' }}>About Your Account</h3>
+                <h3 style={{ marginBottom: '20px', fontSize: '1rem', color: 'var(--primary)' }}>Account Statistics</h3>
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: '15px'
+                    gap: '20px'
                 }}>
-                    <div>
-                        <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.6)', marginBottom: '5px' }}>
+                    <div style={{ background: 'var(--background)', padding: '15px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '5px' }}>
                             Account Type
                         </p>
-                        <p style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                            {user.googleId ? 'Google Account' : 'Email Account'}
+                        <p style={{ fontSize: '15px', fontWeight: 'bold', margin: 0 }}>
+                            {user.googleId ? 'Google verified' : 'Email verified'}
                         </p>
                     </div>
-                    <div>
-                        <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.6)', marginBottom: '5px' }}>
+                    <div style={{ background: 'var(--background)', padding: '15px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '5px' }}>
                             Member Since
                         </p>
-                        <p style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                            {new Date().toLocaleDateString()}
+                        <p style={{ fontSize: '15px', fontWeight: 'bold', margin: 0 }}>
+                            {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}
                         </p>
                     </div>
                 </div>

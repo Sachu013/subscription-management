@@ -42,11 +42,11 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
 
     return (
         <section className="form">
-            <h2>{isEditMode ? 'Edit Subscription' : 'Add New Subscription'}</h2>
+            <h2 style={{ marginBottom: '25px', color: 'var(--primary)' }}>{isEditMode ? 'Edit Subscription' : 'Add New Subscription'}</h2>
             <form onSubmit={onSubmit}>
                 <div className="form-group">
                     <label>Service Name</label>
-                    <input type="text" name="name" value={name} onChange={onChange} required />
+                    <input type="text" name="name" value={name} onChange={onChange} placeholder="e.g. Netflix, Spotify" required />
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -79,7 +79,7 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
                     </div>
                     <div className="form-group">
                         <label>Price (₹)</label>
-                        <input type="number" name="price" value={price} onChange={onChange} required />
+                        <input type="number" name="price" value={price} onChange={onChange} placeholder="0.00" required />
                     </div>
                 </div>
 
@@ -97,9 +97,18 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
                     </div>
                 </div>
 
-                <div className="form-group" style={{ marginTop: '20px' }}>
+                <div className="form-group" style={{ marginTop: '30px', display: 'flex', gap: '15px' }}>
                     <button type="submit" className="btn btn-block">{isEditMode ? 'Update' : 'Add'} Subscription</button>
-                    {isEditMode && <button type="button" className="btn" onClick={onCancel} style={{ marginLeft: '10px', background: 'rgba(255,255,255,0.1)' }}>Cancel</button>}
+                    {isEditMode && (
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={onCancel}
+                            style={{ flex: '0 0 100px' }}
+                        >
+                            Cancel
+                        </button>
+                    )}
                 </div>
             </form>
         </section>

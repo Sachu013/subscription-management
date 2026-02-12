@@ -110,48 +110,87 @@ const PaymentHistory = () => {
     if (isLoading) return <Spinner />;
 
     return (
-        <div style={{ padding: '30px', color: 'white' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <div style={{ padding: '30px', color: 'var(--text-primary)' }}>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '30px',
+                background: 'var(--card-bg)',
+                padding: '20px',
+                borderRadius: '16px',
+                border: '1px solid var(--border-color)',
+                boxShadow: 'var(--shadow)'
+            }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <button onClick={() => navigate('/dashboard')} className="btn" style={{ borderRadius: '50%', padding: '10px' }}>
+                    <button
+                        onClick={() => navigate('/')}
+                        className="btn"
+                        style={{
+                            borderRadius: '50%',
+                            padding: '10px',
+                            background: 'var(--background)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--border-color)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
                         <FaArrowLeft />
                     </button>
-                    <h1 style={{ margin: 0 }}>{subscription?.name} Payment History</h1>
+                    <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>{subscription?.name} History</h1>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={handleExport} className="btn" style={{ background: '#007bff' }}>
-                        <FaDownload /> Export CSV
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button onClick={handleExport} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FaDownload /> Export
                     </button>
-                    <button onClick={() => setShowModal(true)} className="btn" style={{ background: '#43e97b', color: '#000' }}>
+                    <button onClick={() => setShowModal(true)} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaPlus /> Add Payment
                     </button>
                 </div>
             </div>
 
-            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '15px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{
+                background: 'var(--card-bg)',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                border: '1px solid var(--border-color)',
+                boxShadow: 'var(--shadow)'
+            }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
-                        <tr style={{ background: 'rgba(67, 233, 123, 0.1)', color: '#43e97b' }}>
-                            <th style={{ padding: '15px' }}>Date</th>
-                            <th style={{ padding: '15px' }}>Amount</th>
-                            <th style={{ padding: '15px' }}>Method</th>
-                            <th style={{ padding: '15px' }}>Notes</th>
-                            <th style={{ padding: '15px' }}>Actions</th>
+                        <tr style={{ background: 'var(--secondary)', color: '#2c2c2c' }}>
+                            <th style={{ padding: '18px' }}>Date</th>
+                            <th style={{ padding: '18px' }}>Amount</th>
+                            <th style={{ padding: '18px' }}>Method</th>
+                            <th style={{ padding: '18px' }}>Notes</th>
+                            <th style={{ padding: '18px' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {payments.length === 0 ? (
-                            <tr><td colSpan="5" style={{ padding: '30px', textAlign: 'center', opacity: 0.5 }}>No payment records found</td></tr>
+                            <tr><td colSpan="5" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)', fontStyle: 'italic' }}>No payment records found</td></tr>
                         ) : (
                             payments.map(p => (
-                                <tr key={p._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <td style={{ padding: '15px' }}>{new Date(p.paymentDate).toLocaleDateString()}</td>
-                                    <td style={{ padding: '15px', fontWeight: 'bold' }}>₹{p.amount}</td>
-                                    <td style={{ padding: '15px' }}>{p.method}</td>
-                                    <td style={{ padding: '15px', fontSize: '13px', opacity: 0.8 }}>{p.notes || '-'}</td>
-                                    <td style={{ padding: '15px', display: 'flex', gap: '10px' }}>
-                                        <button onClick={() => openEdit(p)} style={{ background: 'none', border: 'none', color: '#ffc107', cursor: 'pointer' }}><FaEdit /></button>
-                                        <button onClick={() => handleDelete(p._id)} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}><FaTrash /></button>
+                                <tr key={p._id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s' }}>
+                                    <td style={{ padding: '16px' }}>{new Date(p.paymentDate).toLocaleDateString()}</td>
+                                    <td style={{ padding: '16px', fontWeight: 'bold', color: 'var(--primary)' }}>₹{p.amount}</td>
+                                    <td style={{ padding: '16px' }}>
+                                        <span style={{
+                                            background: 'var(--background)',
+                                            padding: '4px 10px',
+                                            borderRadius: '8px',
+                                            fontSize: '12px',
+                                            border: '1px solid var(--border-color)'
+                                        }}>
+                                            {p.method}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>{p.notes || '-'}</td>
+                                    <td style={{ padding: '16px', display: 'flex', gap: '15px' }}>
+                                        <button onClick={() => openEdit(p)} style={{ background: 'none', border: 'none', color: '#ff9800', cursor: 'pointer', fontSize: '1.1rem' }}><FaEdit /></button>
+                                        <button onClick={() => handleDelete(p._id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '1.1rem' }}><FaTrash /></button>
                                     </td>
                                 </tr>
                             ))
@@ -163,10 +202,11 @@ const PaymentHistory = () => {
             {showModal && (
                 <div style={{
                     position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-                    background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1001
+                    background: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1001,
+                    backdropFilter: 'blur(4px)'
                 }}>
-                    <div className="form" style={{ width: '400px', background: '#1a1a1a', padding: '30px', borderRadius: '15px' }}>
-                        <h2>{editingPayment ? 'Edit' : 'Add'} Payment</h2>
+                    <div className="form" style={{ width: '400px', background: 'var(--card-bg)', padding: '30px', borderRadius: '16px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)' }}>
+                        <h2 style={{ color: 'var(--primary)', marginBottom: '25px' }}>{editingPayment ? 'Edit' : 'Add'} Payment</h2>
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
                                 <label>Amount (₹)</label>
@@ -187,11 +227,11 @@ const PaymentHistory = () => {
                             </div>
                             <div className="form-group">
                                 <label>Notes</label>
-                                <input type="text" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+                                <input type="text" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Optional notes" />
                             </div>
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                            <div style={{ display: 'flex', gap: '12px', marginTop: '30px' }}>
                                 <button type="submit" className="btn btn-block">{editingPayment ? 'Update' : 'Add'}</button>
-                                <button type="button" onClick={() => setShowModal(false)} className="btn btn-block" style={{ background: '#333' }}>Cancel</button>
+                                <button type="button" onClick={() => setShowModal(false)} className="btn btn-block btn-secondary">Cancel</button>
                             </div>
                         </form>
                     </div>

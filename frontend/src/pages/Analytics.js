@@ -13,17 +13,14 @@ const Analytics = () => {
     const { user, logout } = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Filter states
     const [globalStatus, setGlobalStatus] = useState('All');
     const [globalCategory, setGlobalCategory] = useState('All');
 
-    // Analytics data from backend
     const [metrics, setMetrics] = useState(null);
     const [categoryData, setCategoryData] = useState([]);
     const [monthlyTrend, setMonthlyTrend] = useState([]);
     const [topSubscriptions, setTopSubscriptions] = useState([]);
 
-    // Internal breakdown filters
     const [breakdownFilter, setBreakdownFilter] = useState('all_time');
     const [topSubFilter, setTopSubFilter] = useState('allTime');
 
@@ -78,7 +75,8 @@ const Analytics = () => {
         }
     }, [user, navigate, globalStatus, globalCategory, breakdownFilter, topSubFilter]);
 
-    const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#fee140', '#30cfd0'];
+    // Use theme-aware colors for charts
+    const COLORS = ['#789A99', '#FFD2C2', '#9eb5b4', '#f7c0af', '#b8c9c8', '#ffe1d6', '#cbd7d6', '#fff1ec'];
 
     if (isLoading) {
         return <Spinner />;
@@ -86,16 +84,36 @@ const Analytics = () => {
 
     return (
         <section className="dashboard">
-            <header style={{ marginBottom: '30px' }}>
+            <header style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: '1px solid var(--border-color)',
+                paddingBottom: '20px',
+                marginBottom: '30px'
+            }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <button onClick={() => navigate('/')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <FaArrowLeft /> Back
+                    <button
+                        onClick={() => navigate('/')}
+                        className="btn"
+                        style={{
+                            borderRadius: '50%',
+                            padding: '10px',
+                            background: 'var(--background)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--border-color)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <FaArrowLeft />
                     </button>
-                    <h1>Analytics Dashboard</h1>
+                    <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>Analytics Dashboard</h1>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={() => navigate('/category-comparison')} className="btn" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-                        <FaChartBar style={{ marginRight: '5px' }} /> Category Comparison
+                    <button onClick={() => navigate('/category-comparison')} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FaChartBar /> Comparison
                     </button>
                     <button onClick={logout} className="btn">Logout</button>
                 </div>
@@ -119,85 +137,75 @@ const Analytics = () => {
                 marginBottom: '30px'
             }}>
                 <div style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
+                    background: 'var(--card-bg)',
                     padding: '25px',
-                    borderRadius: '15px',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    textAlign: 'center'
+                    borderRadius: '16px',
+                    border: '1px solid var(--border-color)',
+                    textAlign: 'center',
+                    boxShadow: 'var(--shadow)'
                 }}>
-                    <h3 style={{ fontSize: '16px', marginBottom: '10px', color: 'rgba(255, 255, 255, 0.8)' }}>All Time Spent</h3>
-                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#667eea' }}>₹{metrics?.allTimeTotal || 0}</p>
+                    <h3 style={{ fontSize: '14px', marginBottom: '10px', color: 'var(--text-secondary)' }}>All Time Spent</h3>
+                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>₹{metrics?.allTimeTotal || 0}</p>
                 </div>
                 <div style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
+                    background: 'var(--card-bg)',
                     padding: '25px',
-                    borderRadius: '15px',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    textAlign: 'center'
+                    borderRadius: '16px',
+                    border: '1px solid var(--border-color)',
+                    textAlign: 'center',
+                    boxShadow: 'var(--shadow)'
                 }}>
-                    <h3 style={{ fontSize: '16px', marginBottom: '10px', color: 'rgba(255, 255, 255, 0.8)' }}>Current Month Spending</h3>
-                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#43e97b' }}>₹{metrics?.monthlyTotal || 0}</p>
+                    <h3 style={{ fontSize: '14px', marginBottom: '10px', color: 'var(--text-secondary)' }}>Current Month</h3>
+                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#789A99', margin: 0 }}>₹{metrics?.monthlyTotal || 0}</p>
                 </div>
                 <div style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
+                    background: 'var(--card-bg)',
                     padding: '25px',
-                    borderRadius: '15px',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    textAlign: 'center'
+                    borderRadius: '16px',
+                    border: '1px solid var(--border-color)',
+                    textAlign: 'center',
+                    boxShadow: 'var(--shadow)'
                 }}>
-                    <h3 style={{ fontSize: '16px', marginBottom: '10px', color: 'rgba(255, 255, 255, 0.8)' }}>Active Subscriptions</h3>
-                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#fa709a' }}>{metrics?.activeCount || 0}</p>
+                    <h3 style={{ fontSize: '14px', marginBottom: '10px', color: 'var(--text-secondary)' }}>Active</h3>
+                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>{metrics?.activeCount || 0}</p>
                 </div>
             </div>
 
-            {/* Monthly Trend Line Chart - NEW */}
+            {/* Monthly Trend Chart */}
             <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                padding: '25px',
-                borderRadius: '15px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                marginBottom: '30px'
+                background: 'var(--card-bg)',
+                padding: '30px',
+                borderRadius: '16px',
+                border: '1px solid var(--border-color)',
+                marginBottom: '30px',
+                boxShadow: 'var(--shadow)'
             }}>
-                <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', fontSize: '20px' }}>
-                    <FaChartLine /> Monthly Spending Trend (Last 12 Months)
+                <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px', fontSize: '20px', color: 'var(--primary)' }}>
+                    <FaChartLine /> Monthly Spending Trend
                 </h2>
                 {monthlyTrend.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={monthlyTrend}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                            <XAxis dataKey="month" stroke="rgba(255,255,255,0.7)" angle={-45} textAnchor="end" height={80} />
-                            <YAxis stroke="rgba(255,255,255,0.7)" />
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                            <XAxis dataKey="month" stroke="var(--text-secondary)" fontSize={12} tickMargin={10} />
+                            <YAxis stroke="var(--text-secondary)" fontSize={12} />
                             <Tooltip
                                 contentStyle={{
-                                    background: 'rgba(0,0,0,0.8)',
-                                    border: '1px solid rgba(255,255,255,0.2)',
-                                    borderRadius: '8px'
+                                    background: 'var(--card-bg)',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '12px',
+                                    color: 'var(--text-primary)'
                                 }}
                             />
                             <Legend />
-                            <Line type="monotone" dataKey="amount" stroke="#43e97b" strokeWidth={3} name="Monthly Spending (₹)" dot={{ fill: '#43e97b', r: 5 }} />
+                            <Line type="smooth" dataKey="amount" stroke="var(--primary)" strokeWidth={3} name="Spending (₹)" dot={{ fill: 'var(--primary)', r: 4 }} />
                         </LineChart>
                     </ResponsiveContainer>
                 ) : (
-                    <div style={{
-                        textAlign: 'center',
-                        color: 'rgba(255,255,255,0.8)',
-                        padding: '30px',
-                        background: 'rgba(255,255,255,0.08)',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        borderRadius: '12px'
-                    }}>
-                        <h3 style={{ marginBottom: '8px' }}>Insufficient data</h3>
-                        <p>Add subscriptions to view monthly spending trends.</p>
-                    </div>
+                    <div style={{ textAlign: 'center', padding: '40px', opacity: 0.6 }}>No trend data available</div>
                 )}
             </div>
 
-            {/* Charts Grid */}
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
@@ -206,31 +214,31 @@ const Analytics = () => {
             }}>
                 {/* Category Pie Chart */}
                 <div style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    padding: '25px',
-                    borderRadius: '15px',
-                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                    background: 'var(--card-bg)',
+                    padding: '30px',
+                    borderRadius: '16px',
+                    border: '1px solid var(--border-color)',
+                    boxShadow: 'var(--shadow)'
                 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', margin: 0 }}>
-                            <FaChartPie /> Category-wise Spending
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', margin: 0, color: 'var(--primary)' }}>
+                            <FaChartPie /> Category Breakdown
                         </h2>
                         <select
                             value={breakdownFilter}
                             onChange={(e) => setBreakdownFilter(e.target.value)}
                             style={{
-                                background: 'rgba(255,255,255,0.1)',
-                                border: '1px solid rgba(255,255,255,0.2)',
+                                background: 'var(--background)',
+                                border: '1px solid var(--border-color)',
                                 borderRadius: '8px',
-                                color: '#fff',
-                                padding: '5px 10px',
-                                outline: 'none'
+                                color: 'var(--text-primary)',
+                                padding: '6px 12px',
+                                fontSize: '13px'
                             }}
                         >
-                            <option value="all_time" style={{ background: '#333' }}>All Time</option>
-                            <option value="active_only" style={{ background: '#333' }}>Current Active Only</option>
-                            <option value="current_month" style={{ background: '#333' }}>Current Month Only</option>
+                            <option value="all_time">All Time</option>
+                            <option value="active_only">Active Only</option>
+                            <option value="current_month">Current Month</option>
                         </select>
                     </div>
                     {categoryData.length > 0 ? (
@@ -252,136 +260,89 @@ const Analytics = () => {
                                 </Pie>
                                 <Tooltip
                                     contentStyle={{
-                                        background: 'rgba(0,0,0,0.8)',
-                                        border: '1px solid rgba(255,255,255,0.2)',
-                                        borderRadius: '8px'
+                                        background: 'var(--card-bg)',
+                                        border: '1px solid var(--border-color)',
+                                        borderRadius: '12px'
                                     }}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div style={{
-                            textAlign: 'center',
-                            color: 'rgba(255,255,255,0.8)',
-                            padding: '30px',
-                            background: 'rgba(255,255,255,0.08)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            borderRadius: '12px'
-                        }}>
-                            <h3 style={{ marginBottom: '8px' }}>Insufficient data</h3>
-                            <p>Add subscriptions to view category-wise analytics.</p>
-                        </div>
+                        <div style={{ textAlign: 'center', padding: '40px', opacity: 0.6 }}>No category data available</div>
                     )}
                 </div>
 
-                {/* Top 5 Subscriptions - NEW */}
+                {/* Top 5 Subscriptions */}
                 <div style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    padding: '25px',
-                    borderRadius: '15px',
-                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                    background: 'var(--card-bg)',
+                    padding: '30px',
+                    borderRadius: '16px',
+                    border: '1px solid var(--border-color)',
+                    boxShadow: 'var(--shadow)'
                 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', margin: 0 }}>
-                            <FaTrophy /> Top 5 Subscriptions
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', margin: 0, color: 'var(--primary)' }}>
+                            <FaTrophy /> Top 5
                         </h2>
-                        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', padding: '2px' }}>
-                            <button
-                                onClick={() => setTopSubFilter('allTime')}
-                                style={{
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    padding: '5px 12px',
-                                    fontSize: '12px',
-                                    cursor: 'pointer',
-                                    background: topSubFilter === 'allTime' ? '#667eea' : 'transparent',
-                                    color: '#fff',
-                                    marginRight: '2px'
-                                }}
-                            >
-                                All Time
-                            </button>
-                            <button
-                                onClick={() => setTopSubFilter('activeOnly')}
-                                style={{
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    padding: '5px 12px',
-                                    fontSize: '12px',
-                                    cursor: 'pointer',
-                                    background: topSubFilter === 'activeOnly' ? '#667eea' : 'transparent',
-                                    color: '#fff',
-                                    marginRight: '2px'
-                                }}
-                            >
-                                Active
-                            </button>
-                            <button
-                                onClick={() => setTopSubFilter('expiredOnly')}
-                                style={{
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    padding: '5px 12px',
-                                    fontSize: '12px',
-                                    cursor: 'pointer',
-                                    background: topSubFilter === 'expiredOnly' ? '#667eea' : 'transparent',
-                                    color: '#fff'
-                                }}
-                            >
-                                Expired
-                            </button>
+                        <div style={{ display: 'flex', background: 'var(--background)', borderRadius: '10px', padding: '3px', border: '1px solid var(--border-color)' }}>
+                            {['allTime', 'activeOnly', 'expiredOnly'].map(filter => (
+                                <button
+                                    key={filter}
+                                    onClick={() => setTopSubFilter(filter)}
+                                    style={{
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        padding: '6px 12px',
+                                        fontSize: '11px',
+                                        cursor: 'pointer',
+                                        background: topSubFilter === filter ? 'var(--primary)' : 'transparent',
+                                        color: topSubFilter === filter ? '#fff' : 'var(--text-secondary)',
+                                        transition: 'var(--transition)'
+                                    }}
+                                >
+                                    {filter === 'allTime' ? 'All Time' : filter === 'activeOnly' ? 'Active' : 'Expired'}
+                                </button>
+                            ))}
                         </div>
                     </div>
                     {topSubscriptions.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {topSubscriptions.map((sub, index) => (
                                 <div key={sub._id} style={{
-                                    background: 'rgba(255,255,255,0.08)',
-                                    border: '1px solid rgba(255,255,255,0.2)',
-                                    borderRadius: '10px',
-                                    padding: '15px',
+                                    background: 'var(--background)',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '12px',
+                                    padding: '12px 15px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '15px'
                                 }}>
                                     <div style={{
-                                        width: '40px',
-                                        height: '40px',
+                                        width: '36px',
+                                        height: '36px',
                                         borderRadius: '50%',
                                         background: COLORS[index % COLORS.length],
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        fontSize: '20px',
+                                        fontSize: '16px',
                                         fontWeight: 'bold',
                                         color: '#fff'
                                     }}>
                                         {index + 1}
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <h3 style={{ fontSize: '16px', marginBottom: '5px', color: '#fff' }}>{sub.name}</h3>
-                                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>{sub.category}</p>
+                                        <h3 style={{ fontSize: '15px', margin: 0, color: 'var(--text-primary)' }}>{sub.name}</h3>
+                                        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0 }}>{sub.category}</p>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
-                                        <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#43e97b', margin: 0 }}>₹{sub.totalAmountSpent}</p>
-                                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Total Spent</p>
+                                        <p style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>₹{sub.totalAmountSpent}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div style={{
-                            textAlign: 'center',
-                            color: 'rgba(255,255,255,0.8)',
-                            padding: '30px',
-                            background: 'rgba(255,255,255,0.08)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            borderRadius: '12px'
-                        }}>
-                            <h3 style={{ marginBottom: '8px' }}>Insufficient data</h3>
-                            <p>Add subscriptions to view top subscriptions.</p>
-                        </div>
+                        <div style={{ textAlign: 'center', padding: '40px', opacity: 0.6 }}>No data available</div>
                     )}
                 </div>
             </div>

@@ -69,56 +69,68 @@ const CategoryComparison = () => {
         }
     }, [selectedCategory, fetchComparisonData]);
 
-    const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#fee140', '#30cfd0'];
+    const COLORS = ['#789A99', '#FFD2C2', '#9eb5b4', '#f7c0af', '#b8c9c8', '#ffe1d6', '#cbd7d6', '#fff1ec'];
 
     return (
         <section className="dashboard">
-            <header style={{ marginBottom: '30px' }}>
+            <header style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: '1px solid var(--border-color)',
+                paddingBottom: '20px',
+                marginBottom: '30px'
+            }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <button onClick={() => navigate('/analytics')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <FaArrowLeft /> Back to Analytics
+                    <button
+                        onClick={() => navigate('/analytics')}
+                        className="btn"
+                        style={{
+                            borderRadius: '50%',
+                            padding: '10px',
+                            background: 'var(--background)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--border-color)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <FaArrowLeft />
                     </button>
-                    <h1>Category Comparison</h1>
+                    <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>Category Comparison</h1>
                 </div>
                 <button onClick={logout} className="btn">Logout</button>
             </header>
 
             {/* Category Selector */}
             <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                padding: '20px',
-                borderRadius: '15px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                marginBottom: '30px'
+                background: 'var(--card-bg)',
+                padding: '25px',
+                borderRadius: '16px',
+                border: '1px solid var(--border-color)',
+                marginBottom: '30px',
+                boxShadow: 'var(--shadow)'
             }}>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '16px', fontWeight: 'bold' }}>
-                    Select Category to Compare:
+                <label style={{ display: 'block', marginBottom: '15px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                    Select Category:
                 </label>
-                <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    style={{
-                        width: '100%',
-                        maxWidth: '400px',
-                        padding: '12px',
-                        fontSize: '16px',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(255, 255, 255, 0.3)',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        color: '#fff'
-                    }}
-                >
-                    {categories.length > 0 ? (
-                        categories.map((cat, index) => (
-                            <option key={index} value={cat} style={{ background: '#1a1a2e', color: '#fff' }}>
-                                {cat}
-                            </option>
-                        ))
-                    ) : (
-                        <option value="" style={{ background: '#1a1a2e', color: '#fff' }}>No categories available</option>
-                    )}
-                </select>
+                <div className="form-group" style={{ maxWidth: '400px', marginBottom: 0 }}>
+                    <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                    >
+                        {categories.length > 0 ? (
+                            categories.map((cat, index) => (
+                                <option key={index} value={cat}>
+                                    {cat}
+                                </option>
+                            ))
+                        ) : (
+                            <option value="">No categories available</option>
+                        )}
+                    </select>
+                </div>
             </div>
 
             {/* Comparison Chart */}
@@ -130,58 +142,59 @@ const CategoryComparison = () => {
                         <>
                             {/* Bar Chart */}
                             <div style={{
-                                background: 'rgba(255, 255, 255, 0.1)',
-                                backdropFilter: 'blur(10px)',
-                                padding: '25px',
-                                borderRadius: '15px',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                marginBottom: '30px'
+                                background: 'var(--card-bg)',
+                                padding: '30px',
+                                borderRadius: '16px',
+                                border: '1px solid var(--border-color)',
+                                marginBottom: '30px',
+                                boxShadow: 'var(--shadow)'
                             }}>
-                                <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', fontSize: '20px' }}>
-                                    <FaChartBar /> {selectedCategory} - Monthly Equivalent Comparison
+                                <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px', fontSize: '20px', color: 'var(--primary)' }}>
+                                    <FaChartBar /> {selectedCategory} Comparison
                                 </h2>
                                 <ResponsiveContainer width="100%" height={400}>
                                     <BarChart data={comparisonData}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                                        <XAxis dataKey="name" stroke="rgba(255,255,255,0.7)" angle={-45} textAnchor="end" height={120} />
-                                        <YAxis stroke="rgba(255,255,255,0.7)" />
+                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                                        <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={12} tickMargin={10} />
+                                        <YAxis stroke="var(--text-secondary)" fontSize={12} />
                                         <Tooltip
                                             contentStyle={{
-                                                background: 'rgba(0,0,0,0.8)',
-                                                border: '1px solid rgba(255,255,255,0.2)',
-                                                borderRadius: '8px'
+                                                background: 'var(--card-bg)',
+                                                border: '1px solid var(--border-color)',
+                                                borderRadius: '12px',
+                                                color: 'var(--text-primary)'
                                             }}
                                         />
                                         <Legend />
-                                        <Bar dataKey="monthlyCost" fill="#667eea" name="Monthly Equivalent (₹)" />
+                                        <Bar dataKey="monthlyCost" fill="var(--primary)" name="Monthly Equivalent (₹)" radius={[6, 6, 0, 0]} />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
 
                             {/* Comparison Table */}
                             <div style={{
-                                background: 'rgba(255, 255, 255, 0.1)',
-                                backdropFilter: 'blur(10px)',
+                                background: 'var(--card-bg)',
                                 padding: '25px',
-                                borderRadius: '15px',
-                                border: '1px solid rgba(255, 255, 255, 0.2)'
+                                borderRadius: '16px',
+                                border: '1px solid var(--border-color)',
+                                boxShadow: 'var(--shadow)'
                             }}>
-                                <h2 style={{ marginBottom: '20px', fontSize: '20px' }}>Detailed Comparison</h2>
+                                <h2 style={{ marginBottom: '25px', fontSize: '1.1rem', color: 'var(--primary)' }}>Breakdown</h2>
                                 <div style={{ overflowX: 'auto' }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                         <thead>
-                                            <tr style={{ borderBottom: '2px solid rgba(255,255,255,0.2)' }}>
-                                                <th style={{ padding: '12px', textAlign: 'left', color: 'rgba(255,255,255,0.8)' }}>Rank</th>
-                                                <th style={{ padding: '12px', textAlign: 'left', color: 'rgba(255,255,255,0.8)' }}>Subscription</th>
-                                                <th style={{ padding: '12px', textAlign: 'left', color: 'rgba(255,255,255,0.8)' }}>Billing Cycle</th>
-                                                <th style={{ padding: '12px', textAlign: 'right', color: 'rgba(255,255,255,0.8)' }}>Price</th>
-                                                <th style={{ padding: '12px', textAlign: 'right', color: 'rgba(255,255,255,0.8)' }}>Monthly Equivalent</th>
+                                            <tr style={{ background: 'var(--secondary)', color: '#2c2c2c' }}>
+                                                <th style={{ padding: '15px' }}>Rank</th>
+                                                <th style={{ padding: '15px' }}>Subscription</th>
+                                                <th style={{ padding: '15px' }}>Billing Cycle</th>
+                                                <th style={{ padding: '15px', textAlign: 'right' }}>Price</th>
+                                                <th style={{ padding: '15px', textAlign: 'right' }}>Monthly</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {comparisonData.map((sub, index) => (
-                                                <tr key={sub._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                                                    <td style={{ padding: '12px' }}>
+                                                <tr key={sub._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                                    <td style={{ padding: '15px' }}>
                                                         <div style={{
                                                             width: '30px',
                                                             height: '30px',
@@ -190,16 +203,17 @@ const CategoryComparison = () => {
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
-                                                            fontSize: '14px',
-                                                            fontWeight: 'bold'
+                                                            fontSize: '13px',
+                                                            fontWeight: 'bold',
+                                                            color: '#fff'
                                                         }}>
                                                             {index + 1}
                                                         </div>
                                                     </td>
-                                                    <td style={{ padding: '12px', fontWeight: 'bold' }}>{sub.name}</td>
-                                                    <td style={{ padding: '12px', color: 'rgba(255,255,255,0.7)' }}>{sub.billingCycle}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right', color: 'rgba(255,255,255,0.7)' }}>₹{sub.price}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold', color: '#43e97b' }}>₹{sub.monthlyCost}</td>
+                                                    <td style={{ padding: '15px', fontWeight: 'bold' }}>{sub.name}</td>
+                                                    <td style={{ padding: '15px', color: 'var(--text-secondary)' }}>{sub.billingCycle}</td>
+                                                    <td style={{ padding: '15px', textAlign: 'right', color: 'var(--text-secondary)' }}>₹{sub.price}</td>
+                                                    <td style={{ padding: '15px', textAlign: 'right', fontWeight: 'bold', color: 'var(--primary)' }}>₹{sub.monthlyCost}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -210,13 +224,13 @@ const CategoryComparison = () => {
                     ) : (
                         <div style={{
                             textAlign: 'center',
-                            color: 'rgba(255,255,255,0.8)',
                             padding: '60px 30px',
-                            background: 'rgba(255,255,255,0.08)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            borderRadius: '12px'
+                            background: 'var(--card-bg)',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '16px',
+                            color: 'var(--text-secondary)'
                         }}>
-                            <h3 style={{ marginBottom: '10px' }}>No subscriptions in this category</h3>
+                            <h3 style={{ marginBottom: '10px' }}>No entries found</h3>
                             <p>Add subscriptions to the "{selectedCategory}" category to see comparisons.</p>
                         </div>
                     )}

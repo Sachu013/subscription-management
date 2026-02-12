@@ -4,7 +4,7 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import subscriptionService from '../services/subscriptionService';
-import AuthContext from '../context/AuthContext';
+import { ThemeContext } from '../context/ThemeContext';
 import Spinner from '../components/Spinner';
 import { FaArrowLeft } from 'react-icons/fa';
 
@@ -12,31 +12,28 @@ const localizer = momentLocalizer(moment);
 
 const CalendarView = () => {
     const navigate = useNavigate();
-    const { user } = useContext(AuthContext);
+    const { theme } = useContext(ThemeContext);
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!user) {
-            navigate('/login');
-            return;
-        }
-
         const fetchCalendarData = async () => {
             try {
                 const storedUser = JSON.parse(localStorage.getItem('user'));
                 const token = storedUser?.token;
-                if (token) {
-                    const data = await subscriptionService.getCalendarData(token);
-                    // Format events for react-big-calendar
-                    const formattedEvents = data.map(event => ({
-                        ...event,
-                        start: new Date(event.start),
-                        end: new Date(event.end),
-                        allDay: true
-                    }));
-                    setEvents(formattedEvents);
+                if (!token) {
+                    navigate('/login');
+                    return;
                 }
+                const data = await subscriptionService.getCalendarData(token);
+                // Format events for react-big-calendar
+                const formattedEvents = data.map(event => ({
+                    ...event,
+                    start: new Date(event.start),
+                    end: new Date(event.end),
+                    allDay: true
+                }));
+                setEvents(formattedEvents);
             } catch (error) {
                 console.error('Error fetching calendar data:', error);
             } finally {
@@ -45,46 +42,27 @@ const CalendarView = () => {
         };
 
         fetchCalendarData();
-    }, [user, navigate]);
+    }, [navigate]);
 
     const eventStyleGetter = (event) => {
-        let backgroundColor = '#43e97b'; // Default green
-
-        const categoryColors = {
-            'Entertainment': '#9c27b0',
-            'Music': '#e91e63',
-            'OTT / Streaming': '#673ab7',
-            'Gaming': '#3f51b5',
-            'Education': '#2196f3',
-            'Productivity': '#00bcd4',
-            'Cloud Services': '#009688',
-            'Developer Tools': '#4caf50',
-            'Design Tools': '#8bc34a',
-            'Finance': '#ffeb3b',
-            'Health & Fitness': '#ffc107',
-            'Food & Delivery': '#ff9800',
-            'News & Media': '#ff5722',
-            'Shopping': '#795548',
-            'Utilities': '#607d8b',
-            'AI Tools': '#333333'
-        };
-
-        if (categoryColors[event.category]) {
-            backgroundColor = categoryColors[event.category];
-        }
+        let backgroundColor = 'var(--primary)';
 
         if (event.status === 'Paused') {
-            backgroundColor = '#888888';
+            backgroundColor = 'var(--text-secondary)';
+        } else if (event.status === 'Expired') {
+            backgroundColor = 'var(--danger)';
         }
 
         return {
             style: {
                 backgroundColor,
-                borderRadius: '5px',
-                opacity: 0.8,
-                color: 'white',
+                borderRadius: '8px',
+                opacity: 0.9,
+                color: '#fff',
                 border: 'none',
-                display: 'block'
+                display: 'block',
+                fontSize: '12px',
+                padding: '2px 5px'
             }
         };
     };
@@ -92,25 +70,44 @@ const CalendarView = () => {
     if (isLoading) return <Spinner />;
 
     return (
-        <div className="calendar-container" style={{ padding: '30px', color: 'white' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
+        <div className="calendar-container" style={{ padding: '30px', color: 'var(--text-primary)' }}>
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px',
+                marginBottom: '30px',
+                background: 'var(--card-bg)',
+                padding: '20px',
+                borderRadius: '16px',
+                border: '1px solid var(--border-color)',
+                boxShadow: 'var(--shadow)'
+            }}>
                 <button
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => navigate('/')}
                     className="btn"
-                    style={{ background: 'rgba(255,255,255,0.1)', borderRadius: '50%', padding: '10px' }}
+                    style={{
+                        background: 'var(--background)',
+                        color: 'var(--text-primary)',
+                        borderRadius: '50%',
+                        padding: '10px',
+                        border: '1px solid var(--border-color)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
                 >
                     <FaArrowLeft />
                 </button>
-                <h1 style={{ margin: 0 }}>Upcoming Payment Calendar</h1>
+                <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>Upcoming Payments</h1>
             </div>
 
             <div style={{
-                background: 'rgba(255,255,255,0.05)',
-                padding: '20px',
-                borderRadius: '15px',
+                background: 'var(--card-bg)',
+                padding: '25px',
+                borderRadius: '16px',
                 height: '700px',
-                border: '1px solid rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(10px)'
+                border: '1px solid var(--border-color)',
+                boxShadow: 'var(--shadow)'
             }}>
                 <Calendar
                     localizer={localizer}
@@ -126,36 +123,53 @@ const CalendarView = () => {
             <style>
                 {`
                     .rbc-calendar {
-                        color: #fff;
+                        color: var(--text-primary);
                     }
                     .rbc-off-range-bg {
-                        background: rgba(255,255,255,0.02);
+                        background: var(--background);
+                        opacity: 0.5;
                     }
                     .rbc-today {
-                        background: rgba(67, 233, 123, 0.1);
+                        background: var(--secondary);
+                        opacity: 0.3;
                     }
                     .rbc-header {
-                        color: #43e97b;
-                        padding: 10px 0;
-                        font-weight: bold;
+                        color: var(--primary);
+                        padding: 12px 0;
+                        font-weight: 600;
+                        border-bottom: 1px solid var(--border-color);
                     }
                     .rbc-month-view, .rbc-time-view, .rbc-agenda-view {
-                        border: 1px solid rgba(255,255,255,0.1);
+                        border: 1px solid var(--border-color);
+                        border-radius: 8px;
+                        overflow: hidden;
                     }
                     .rbc-day-bg + .rbc-day-bg, .rbc-month-row + .rbc-month-row {
-                        border-left: 1px solid rgba(255,255,255,0.1);
-                        border-top: 1px solid rgba(255,255,255,0.1);
+                        border-left: 1px solid var(--border-color);
+                        border-top: 1px solid var(--border-color);
                     }
                     .rbc-toolbar button {
-                        color: #fff;
-                        border: 1px solid rgba(255,255,255,0.1);
+                        color: var(--text-primary);
+                        border: 1px solid var(--border-color);
+                        border-radius: 8px;
+                        padding: 8px 15px;
+                        margin-right: 5px;
+                        font-family: inherit;
                     }
                     .rbc-toolbar button:active, .rbc-toolbar button.rbc-active {
-                        background: #43e97b;
-                        color: #000;
+                        background: var(--primary);
+                        color: #fff;
+                        box-shadow: none;
                     }
                     .rbc-toolbar button:hover {
-                        background: rgba(67, 233, 123, 0.2);
+                        background: var(--background);
+                        color: var(--primary);
+                    }
+                    [data-theme="dark"] .rbc-toolbar button:hover {
+                        background: var(--border-color);
+                    }
+                    .rbc-month-row {
+                      border-top: 1px solid var(--border-color);
                     }
                 `}
             </style>

@@ -118,12 +118,32 @@ const Reports = () => {
 
     return (
         <section className="dashboard">
-            <header style={{ marginBottom: '30px' }}>
+            <header style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: '1px solid var(--border-color)',
+                paddingBottom: '20px',
+                marginBottom: '30px'
+            }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <button onClick={() => navigate('/')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <FaArrowLeft /> Back
+                    <button
+                        onClick={() => navigate('/')}
+                        className="btn"
+                        style={{
+                            borderRadius: '50%',
+                            padding: '10px',
+                            background: 'var(--background)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--border-color)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <FaArrowLeft />
                     </button>
-                    <h1>Subscription Reports</h1>
+                    <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>Subscription Report</h1>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <button onClick={logout} className="btn">Logout</button>
@@ -141,47 +161,47 @@ const Reports = () => {
             />
 
             <div style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(10px)',
+                background: 'var(--card-bg)',
                 padding: '25px',
-                borderRadius: '15px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                marginBottom: '30px'
+                borderRadius: '16px',
+                border: '1px solid var(--border-color)',
+                marginBottom: '30px',
+                boxShadow: 'var(--shadow)'
             }}>
-                <h2 style={{ fontSize: '18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <FaCalendar /> Date Range (Subscription Start)
+                <h2 style={{ fontSize: '16px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--primary)' }}>
+                    <FaCalendar /> Date Range filter
                 </h2>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'flex-end' }}>
-                    <div style={{ flex: 1, minWidth: '200px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>Start Date</label>
+                    <div className="form-group" style={{ flex: 1, minWidth: '200px', marginBottom: 0 }}>
+                        <label>Start Date</label>
                         <input
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
                         />
                     </div>
-                    <div style={{ flex: 1, minWidth: '200px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>End Date</label>
+                    <div className="form-group" style={{ flex: 1, minWidth: '200px', marginBottom: 0 }}>
+                        <label>End Date</label>
                         <input
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
                         />
                     </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ display: 'flex', gap: '12px' }}>
                         <button onClick={handleGenerateReport} className="btn" style={{ height: '42px', padding: '0 25px' }}>
-                            Update Report
+                            Update
                         </button>
-                        <button onClick={handleExportCSV} className="btn" style={{
+                        <button onClick={handleExportCSV} className="btn btn-secondary" style={{
                             height: '42px',
                             padding: '0 25px',
-                            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                            color: '#000',
-                            fontWeight: 'bold'
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
                         }}
                             disabled={subscriptions.length === 0}
                         >
-                            <FaFileDownload style={{ marginRight: '8px' }} /> Export CSV
+                            <FaFileDownload /> Export CSV
                         </button>
                     </div>
                 </div>
@@ -189,30 +209,30 @@ const Reports = () => {
 
             {/* Summary Stats */}
             <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
+                background: 'var(--card-bg)',
                 padding: '20px',
-                borderRadius: '15px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '16px',
+                border: '1px solid var(--border-color)',
                 marginBottom: '30px',
                 display: 'flex',
                 justifyContent: 'space-around',
                 flexWrap: 'wrap',
-                gap: '20px'
+                gap: '20px',
+                boxShadow: 'var(--shadow)'
             }}>
                 <div style={{ textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '5px' }}>Involved Subscriptions</h3>
-                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#667eea' }}>{subscriptions.length}</p>
+                    <h3 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '5px' }}>Total</h3>
+                    <p style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>{subscriptions.length}</p>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '5px' }}>Active</h3>
-                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#43e97b' }}>
+                    <h3 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '5px' }}>Active</h3>
+                    <p style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>
                         {subscriptions.filter(s => s.status === 'Active').length}
                     </p>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '5px' }}>Expired</h3>
-                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#ff9800' }}>
+                    <h3 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '5px' }}>Expired</h3>
+                    <p style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--danger)', margin: 0 }}>
                         {subscriptions.filter(s => s.status === 'Expired').length}
                     </p>
                 </div>
@@ -220,15 +240,16 @@ const Reports = () => {
 
             <div className="report-content">
                 {subscriptions.length > 0 ? (
-                    <div className="table-responsive" style={{
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        borderRadius: '15px',
+                    <div style={{
+                        background: 'var(--card-bg)',
+                        borderRadius: '16px',
                         overflow: 'hidden',
-                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                        border: '1px solid var(--border-color)',
+                        boxShadow: 'var(--shadow)'
                     }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                             <thead>
-                                <tr style={{ background: 'rgba(255, 255, 255, 0.1)' }}>
+                                <tr style={{ background: 'var(--secondary)', color: '#2c2c2c' }}>
                                     <th style={{ padding: '15px' }}>Name</th>
                                     <th style={{ padding: '15px' }}>Category</th>
                                     <th style={{ padding: '15px' }}>Price</th>
@@ -238,7 +259,7 @@ const Reports = () => {
                             </thead>
                             <tbody>
                                 {subscriptions.map(sub => (
-                                    <tr key={sub._id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                                    <tr key={sub._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                                         <td style={{ padding: '15px' }}>{sub.name}</td>
                                         <td style={{ padding: '15px' }}>{sub.category}</td>
                                         <td style={{ padding: '15px' }}>₹{sub.price}</td>
@@ -246,22 +267,24 @@ const Reports = () => {
                                             <span style={{
                                                 padding: '4px 10px',
                                                 borderRadius: '12px',
-                                                fontSize: '12px',
-                                                background: sub.status === 'Active' ? 'rgba(67, 233, 123, 0.2)' : 'rgba(255, 107, 107, 0.2)',
-                                                color: sub.status === 'Active' ? '#43e97b' : '#ff6b6b'
+                                                fontSize: '11px',
+                                                fontWeight: 'bold',
+                                                background: 'var(--background)',
+                                                border: '1px solid var(--border-color)',
+                                                color: sub.status === 'Active' ? 'var(--primary)' : 'var(--danger)'
                                             }}>
                                                 {sub.status}
                                             </span>
                                         </td>
-                                        <td style={{ padding: '15px' }}>₹{sub.totalSpent}</td>
+                                        <td style={{ padding: '15px', fontWeight: 'bold' }}>₹{sub.totalSpent}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
                 ) : (
-                    <div style={{ textAlign: 'center', padding: '50px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '15px' }}>
-                        <p style={{ color: 'rgba(255, 255, 255, 0.5)' }}>No data found for the current filters.</p>
+                    <div style={{ textAlign: 'center', padding: '50px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                        <p style={{ color: 'var(--text-secondary)' }}>No records found.</p>
                     </div>
                 )}
             </div>

@@ -43,17 +43,17 @@ const ForgotPassword = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '20px'
+            padding: '20px',
+            background: 'var(--background)'
         }}>
             <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '20px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: 'var(--card-bg)',
+                borderRadius: '24px',
+                border: '1px solid var(--border-color)',
                 padding: '50px 40px',
                 width: '100%',
-                maxWidth: '450px',
-                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
+                maxWidth: '440px',
+                boxShadow: 'var(--shadow)'
             }}>
                 {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
@@ -61,20 +61,17 @@ const ForgotPassword = () => {
                         fontSize: '32px',
                         fontWeight: 'bold',
                         marginBottom: '10px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text'
+                        color: 'var(--primary)'
                     }}>
-                        Forgot Password?
+                        Reset Password
                     </h1>
                     <p style={{
-                        fontSize: '16px',
-                        color: 'rgba(255, 255, 255, 0.7)',
+                        fontSize: '15px',
+                        color: 'var(--text-secondary)',
                         margin: 0,
                         lineHeight: '1.5'
                     }}>
-                        Enter your email address and we'll send you instructions to reset your password.
+                        Enter your email and we'll send you recovery instructions.
                     </p>
                 </div>
 
@@ -82,13 +79,14 @@ const ForgotPassword = () => {
                 {message && (
                     <div style={{
                         background: 'rgba(76, 175, 80, 0.1)',
-                        border: '1px solid rgba(76, 175, 80, 0.5)',
-                        borderRadius: '10px',
+                        border: '1px solid #4CAF50',
+                        borderRadius: '12px',
                         padding: '12px 16px',
                         marginBottom: '25px',
                         color: '#4CAF50',
                         fontSize: '14px',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        fontWeight: '500'
                     }}>
                         {message}
                     </div>
@@ -97,12 +95,12 @@ const ForgotPassword = () => {
                 {/* Error Message */}
                 {error && (
                     <div style={{
-                        background: 'rgba(244, 67, 54, 0.1)',
-                        border: '1px solid rgba(244, 67, 54, 0.5)',
-                        borderRadius: '10px',
+                        background: 'rgba(229, 115, 115, 0.1)',
+                        border: '1px solid var(--danger)',
+                        borderRadius: '12px',
                         padding: '12px 16px',
                         marginBottom: '25px',
-                        color: '#f44336',
+                        color: 'var(--danger)',
                         fontSize: '14px',
                         textAlign: 'center'
                     }}>
@@ -113,23 +111,16 @@ const ForgotPassword = () => {
                 {/* Form */}
                 <form onSubmit={onSubmit}>
                     {/* Email Field */}
-                    <div style={{ marginBottom: '25px' }}>
-                        <label style={{
-                            display: 'block',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            color: 'rgba(255, 255, 255, 0.9)',
-                            marginBottom: '8px'
-                        }}>
-                            Email Address
-                        </label>
+                    <div className="form-group" style={{ marginBottom: '25px' }}>
+                        <label>Email Address</label>
                         <div style={{ position: 'relative' }}>
                             <FaEnvelope style={{
                                 position: 'absolute',
                                 left: '16px',
                                 top: '50%',
                                 transform: 'translateY(-50%)',
-                                color: 'rgba(255, 255, 255, 0.5)',
+                                color: 'var(--text-secondary)',
+                                opacity: 0.5,
                                 fontSize: '16px'
                             }} />
                             <input
@@ -141,27 +132,11 @@ const ForgotPassword = () => {
                                     if (error) setError('');
                                     if (message) setMessage('');
                                 }}
-                                placeholder="Enter your email"
+                                placeholder="name@example.com"
                                 required
                                 disabled={loading}
                                 style={{
-                                    width: '100%',
-                                    padding: '14px 16px 14px 45px',
-                                    fontSize: '16px',
-                                    borderRadius: '10px',
-                                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    color: '#fff',
-                                    transition: 'all 0.3s ease',
-                                    outline: 'none'
-                                }}
-                                onFocus={(e) => {
-                                    e.target.style.border = '1px solid rgba(102, 126, 234, 0.6)';
-                                    e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                                }}
-                                onBlur={(e) => {
-                                    e.target.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-                                    e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                                    paddingLeft: '45px'
                                 }}
                             />
                         </div>
@@ -171,41 +146,20 @@ const ForgotPassword = () => {
                     <button
                         type="submit"
                         disabled={loading}
+                        className="btn btn-block"
                         style={{
-                            width: '100%',
                             padding: '16px',
-                            fontSize: '16px',
-                            fontWeight: '600',
-                            borderRadius: '10px',
-                            border: 'none',
-                            background: loading
-                                ? 'rgba(102, 126, 234, 0.5)'
-                                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            color: '#fff',
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            transition: 'all 0.3s ease',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '8px',
-                            boxShadow: '0 4px 15px 0 rgba(102, 126, 234, 0.4)'
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!loading) {
-                                e.target.style.transform = 'translateY(-2px)';
-                                e.target.style.boxShadow = '0 6px 20px 0 rgba(102, 126, 234, 0.6)';
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = '0 4px 15px 0 rgba(102, 126, 234, 0.4)';
+                            gap: '10px'
                         }}
                     >
                         {loading ? (
                             <>
                                 <span style={{
-                                    width: '16px',
-                                    height: '16px',
+                                    width: '18px',
+                                    height: '18px',
                                     border: '2px solid rgba(255, 255, 255, 0.3)',
                                     borderTop: '2px solid #fff',
                                     borderRadius: '50%',
@@ -216,7 +170,7 @@ const ForgotPassword = () => {
                         ) : (
                             <>
                                 <FaPaperPlane />
-                                Send Reset Link
+                                Send Link
                             </>
                         )}
                     </button>
@@ -227,17 +181,14 @@ const ForgotPassword = () => {
                     <Link
                         to="/login"
                         style={{
-                            color: '#667eea',
+                            color: 'var(--primary)',
                             textDecoration: 'none',
                             fontSize: '14px',
-                            fontWeight: '500',
+                            fontWeight: 'bold',
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '5px',
-                            transition: 'color 0.3s ease'
+                            gap: '8px'
                         }}
-                        onMouseEnter={(e) => e.target.style.color = '#764ba2'}
-                        onMouseLeave={(e) => e.target.style.color = '#667eea'}
                     >
                         <FaArrowLeft style={{ fontSize: '12px' }} />
                         Back to Login

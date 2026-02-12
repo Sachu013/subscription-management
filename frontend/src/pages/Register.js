@@ -63,17 +63,17 @@ const Register = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '20px'
+            padding: '20px',
+            background: 'var(--background)'
         }}>
             <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '20px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: 'var(--card-bg)',
+                borderRadius: '24px',
+                border: '1px solid var(--border-color)',
                 padding: '50px 40px',
                 width: '100%',
-                maxWidth: '450px',
-                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
+                maxWidth: '440px',
+                boxShadow: 'var(--shadow)'
             }}>
                 {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
@@ -81,31 +81,28 @@ const Register = () => {
                         fontSize: '32px',
                         fontWeight: 'bold',
                         marginBottom: '10px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text'
+                        color: 'var(--primary)'
                     }}>
                         Create Account
                     </h1>
                     <p style={{
-                        fontSize: '16px',
-                        color: 'rgba(255, 255, 255, 0.7)',
+                        fontSize: '15px',
+                        color: 'var(--text-secondary)',
                         margin: 0
                     }}>
-                        Sign up to start managing subscriptions
+                        Start managing your subscriptions today
                     </p>
                 </div>
 
                 {/* Error Message */}
                 {error && (
                     <div style={{
-                        background: 'rgba(244, 67, 54, 0.1)',
-                        border: '1px solid rgba(244, 67, 54, 0.5)',
-                        borderRadius: '10px',
+                        background: 'rgba(229, 115, 115, 0.1)',
+                        border: '1px solid var(--danger)',
+                        borderRadius: '12px',
                         padding: '12px 16px',
                         marginBottom: '25px',
-                        color: '#f44336',
+                        color: 'var(--danger)',
                         fontSize: '14px',
                         textAlign: 'center'
                     }}>
@@ -116,23 +113,16 @@ const Register = () => {
                 {/* Register Form */}
                 <form onSubmit={onSubmit}>
                     {/* Username Field */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{
-                            display: 'block',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            color: 'rgba(255, 255, 255, 0.9)',
-                            marginBottom: '8px'
-                        }}>
-                            Username
-                        </label>
+                    <div className="form-group">
+                        <label>Username</label>
                         <div style={{ position: 'relative' }}>
                             <FaUser style={{
                                 position: 'absolute',
                                 left: '16px',
                                 top: '50%',
                                 transform: 'translateY(-50%)',
-                                color: 'rgba(255, 255, 255, 0.5)',
+                                color: 'var(--text-secondary)',
+                                opacity: 0.5,
                                 fontSize: '16px'
                             }} />
                             <input
@@ -140,50 +130,27 @@ const Register = () => {
                                 name="username"
                                 value={username}
                                 onChange={onChange}
-                                placeholder="Enter your username"
+                                placeholder="Choose a username"
                                 required
                                 disabled={isLoading}
                                 style={{
-                                    width: '100%',
-                                    padding: '14px 16px 14px 45px',
-                                    fontSize: '16px',
-                                    borderRadius: '10px',
-                                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    color: '#fff',
-                                    transition: 'all 0.3s ease',
-                                    outline: 'none'
-                                }}
-                                onFocus={(e) => {
-                                    e.target.style.border = '1px solid rgba(102, 126, 234, 0.6)';
-                                    e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                                }}
-                                onBlur={(e) => {
-                                    e.target.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-                                    e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                                    paddingLeft: '45px'
                                 }}
                             />
                         </div>
                     </div>
 
                     {/* Email Field */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{
-                            display: 'block',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            color: 'rgba(255, 255, 255, 0.9)',
-                            marginBottom: '8px'
-                        }}>
-                            Email Address
-                        </label>
+                    <div className="form-group">
+                        <label>Email Address</label>
                         <div style={{ position: 'relative' }}>
                             <FaEnvelope style={{
                                 position: 'absolute',
                                 left: '16px',
                                 top: '50%',
                                 transform: 'translateY(-50%)',
-                                color: 'rgba(255, 255, 255, 0.5)',
+                                color: 'var(--text-secondary)',
+                                opacity: 0.5,
                                 fontSize: '16px'
                             }} />
                             <input
@@ -191,50 +158,27 @@ const Register = () => {
                                 name="email"
                                 value={email}
                                 onChange={onChange}
-                                placeholder="Enter your email"
+                                placeholder="name@example.com"
                                 required
                                 disabled={isLoading}
                                 style={{
-                                    width: '100%',
-                                    padding: '14px 16px 14px 45px',
-                                    fontSize: '16px',
-                                    borderRadius: '10px',
-                                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    color: '#fff',
-                                    transition: 'all 0.3s ease',
-                                    outline: 'none'
-                                }}
-                                onFocus={(e) => {
-                                    e.target.style.border = '1px solid rgba(102, 126, 234, 0.6)';
-                                    e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                                }}
-                                onBlur={(e) => {
-                                    e.target.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-                                    e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                                    paddingLeft: '45px'
                                 }}
                             />
                         </div>
                     </div>
 
                     {/* Password Field */}
-                    <div style={{ marginBottom: '25px' }}>
-                        <label style={{
-                            display: 'block',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            color: 'rgba(255, 255, 255, 0.9)',
-                            marginBottom: '8px'
-                        }}>
-                            Password
-                        </label>
+                    <div className="form-group">
+                        <label>Password</label>
                         <div style={{ position: 'relative' }}>
                             <FaLock style={{
                                 position: 'absolute',
                                 left: '16px',
                                 top: '50%',
                                 transform: 'translateY(-50%)',
-                                color: 'rgba(255, 255, 255, 0.5)',
+                                color: 'var(--text-secondary)',
+                                opacity: 0.5,
                                 fontSize: '16px'
                             }} />
                             <input
@@ -242,27 +186,11 @@ const Register = () => {
                                 name="password"
                                 value={password}
                                 onChange={onChange}
-                                placeholder="Create a password"
+                                placeholder="Min. 8 characters"
                                 required
                                 disabled={isLoading}
                                 style={{
-                                    width: '100%',
-                                    padding: '14px 16px 14px 45px',
-                                    fontSize: '16px',
-                                    borderRadius: '10px',
-                                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    color: '#fff',
-                                    transition: 'all 0.3s ease',
-                                    outline: 'none'
-                                }}
-                                onFocus={(e) => {
-                                    e.target.style.border = '1px solid rgba(102, 126, 234, 0.6)';
-                                    e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                                }}
-                                onBlur={(e) => {
-                                    e.target.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-                                    e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                                    paddingLeft: '45px'
                                 }}
                             />
                         </div>
@@ -272,41 +200,21 @@ const Register = () => {
                     <button
                         type="submit"
                         disabled={isLoading}
+                        className="btn btn-block"
                         style={{
-                            width: '100%',
                             padding: '16px',
-                            fontSize: '16px',
-                            fontWeight: '600',
-                            borderRadius: '10px',
-                            border: 'none',
-                            background: isLoading
-                                ? 'rgba(102, 126, 234, 0.5)'
-                                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            color: '#fff',
-                            cursor: isLoading ? 'not-allowed' : 'pointer',
-                            transition: 'all 0.3s ease',
+                            marginTop: '10px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '8px',
-                            boxShadow: '0 4px 15px 0 rgba(102, 126, 234, 0.4)'
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!isLoading) {
-                                e.target.style.transform = 'translateY(-2px)';
-                                e.target.style.boxShadow = '0 6px 20px 0 rgba(102, 126, 234, 0.6)';
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = '0 4px 15px 0 rgba(102, 126, 234, 0.4)';
+                            gap: '10px'
                         }}
                     >
                         {isLoading ? (
                             <>
-                                <span style={{
-                                    width: '16px',
-                                    height: '16px',
+                                <span className="spinner-small" style={{
+                                    width: '18px',
+                                    height: '18px',
                                     border: '2px solid rgba(255, 255, 255, 0.3)',
                                     borderTop: '2px solid #fff',
                                     borderRadius: '50%',
@@ -317,7 +225,7 @@ const Register = () => {
                         ) : (
                             <>
                                 <FaUserPlus />
-                                Create Account
+                                Sign Up
                             </>
                         )}
                     </button>
@@ -330,9 +238,9 @@ const Register = () => {
                     margin: '30px 0',
                     gap: '15px'
                 }}>
-                    <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
-                    <span style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '14px' }}>OR</span>
-                    <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 'bold' }}>OR</span>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
                 </div>
 
                 {/* Google Login */}
@@ -340,23 +248,21 @@ const Register = () => {
                     <GoogleLogin
                         onSuccess={handleGoogleSuccess}
                         onError={handleGoogleError}
+                        theme={document.body.getAttribute('data-theme') === 'dark' ? 'filled_black' : 'outline'}
                     />
                 </div>
 
                 {/* Login Link */}
-                <div style={{ marginTop: '30px', textAlign: 'center' }}>
-                    <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', margin: 0 }}>
+                <div style={{ marginTop: '35px', textAlign: 'center' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>
                         Already have an account?{' '}
                         <Link
                             to="/login"
                             style={{
-                                color: '#667eea',
+                                color: 'var(--primary)',
                                 textDecoration: 'none',
-                                fontWeight: '600',
-                                transition: 'color 0.3s ease'
+                                fontWeight: 'bold'
                             }}
-                            onMouseEnter={(e) => e.target.style.color = '#764ba2'}
-                            onMouseLeave={(e) => e.target.style.color = '#667eea'}
                         >
                             Sign in
                         </Link>
@@ -364,7 +270,7 @@ const Register = () => {
                 </div>
             </div>
 
-            {/* CSS for spinner animation */}
+            {/* CSS for spinner animation if not in global CSS */}
             <style>{`
                 @keyframes spin {
                     0% { transform: rotate(0deg); }

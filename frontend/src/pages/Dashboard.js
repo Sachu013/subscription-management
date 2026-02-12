@@ -1,27 +1,33 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
+import { ThemeContext } from '../context/ThemeContext';
 import subscriptionService from '../services/subscriptionService';
 import analyticsService from '../services/analyticsService';
 import budgetService from '../services/budgetService';
 import { toast } from 'react-toastify';
 import Spinner from '../components/Spinner';
 import {
+    FaPlus,
+    FaSignOutAlt,
     FaChartLine,
+    FaFilter,
+    FaSort,
+    FaBell,
+    FaCalendarAlt,
     FaFileAlt,
     FaUserCircle,
-    FaBell,
-    FaCheckCircle,
+    FaPlusCircle,
     FaWallet,
-    FaSort,
-    FaPlus
+    FaCheckCircle,
+    FaMoon,
+    FaSun
 } from 'react-icons/fa';
-import SubscriptionForm from '../components/SubscriptionForm';
 import SubscriptionItem from '../components/SubscriptionItem';
-import AddPaymentModal from '../components/AddPaymentModal';
-
-import useDebounce from '../hooks/useDebounce';
+import SubscriptionForm from '../components/SubscriptionForm';
 import FilterBar from '../components/FilterBar';
+import AddPaymentModal from '../components/AddPaymentModal';
+import useDebounce from '../hooks/useDebounce';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -115,7 +121,7 @@ const Dashboard = () => {
         }
     };
 
-    // Handle Sort (Backend handles filtering, Frontend handles sorting for responsiveness)
+    // Handle Sort
     useEffect(() => {
         let result = [...subscriptions];
 
@@ -128,10 +134,10 @@ const Dashboard = () => {
                 const dateA = a.nextRenewalDate ? new Date(a.nextRenewalDate) : new Date(0);
                 const dateB = b.nextRenewalDate ? new Date(b.nextRenewalDate) : new Date(0);
                 return dateB - dateA;
-            } else if (sortBy === 'cost-asc') {
-                return a.price - b.price;
             } else if (sortBy === 'cost-desc') {
                 return b.price - a.price;
+            } else if (sortBy === 'cost-asc') {
+                return a.price - b.price;
             }
             return 0;
         });
@@ -172,7 +178,6 @@ const Dashboard = () => {
             const token = storedUser.token;
             const newStatus = subscription.status === 'Paused' ? 'Active' : 'Paused';
 
-            // On resume: Recalculate next renewal from today (set start date to today)
             const updateData = { status: newStatus };
             if (newStatus === 'Active') {
                 updateData.startDate = new Date();
@@ -299,9 +304,9 @@ const Dashboard = () => {
         const diffTime = nextDue - new Date();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return { ...sub, daysUntilRenewal: diffDays };
-    }).filter(sub => sub.status === 'Upcoming' || (sub.daysUntilRenewal >= 0 && sub.daysUntilRenewal <= 7));
+    }).filter(sub => sub.status === 'Upcoming' || (sub.daysUntilRenewal >= 0 && sub.daysUntilRenewal <= 7)).sort((a, b) => a.daysUntilRenewal - b.daysUntilRenewal);
 
-    const expiringSoon = upcomingPayments;
+    const { theme, toggleTheme } = useContext(ThemeContext);
 
     if (isLoading) {
         return <Spinner />;
@@ -310,15 +315,36 @@ const Dashboard = () => {
     return (
         <section className="dashboard">
             <header>
-                <h1>Welcome {user && user.username}</h1>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <button onClick={() => navigate('/analytics')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div>
+                    <h1 style={{ fontSize: '1.6rem' }}>Welcome, {user && user.username}</h1>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Here's your subscription overview</p>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button
+                        onClick={toggleTheme}
+                        className="btn"
+                        style={{
+                            background: 'var(--background)',
+                            color: 'var(--primary)',
+                            borderRadius: '50%',
+                            padding: '12px',
+                            border: '1px solid var(--border-color)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: 'none'
+                        }}
+                        title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+                    >
+                        {theme === 'light' ? <FaMoon /> : <FaSun />}
+                    </button>
+                    <button onClick={() => navigate('/analytics')} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaChartLine /> Analytics
                     </button>
-                    <button onClick={() => navigate('/calendar')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <FaFileAlt /> Calendar
+                    <button onClick={() => navigate('/calendar')} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FaCalendarAlt /> Calendar
                     </button>
-                    <button onClick={() => navigate('/reports')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <button onClick={() => navigate('/reports')} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaFileAlt /> Reports
                     </button>
 
@@ -329,10 +355,12 @@ const Dashboard = () => {
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: '10px',
+                                padding: '12px',
                                 borderRadius: '50%',
-                                background: showNotifications ? 'rgba(67, 233, 123, 0.2)' : 'rgba(255,255,255,0.05)',
-                                position: 'relative'
+                                background: 'var(--background)',
+                                border: '1px solid var(--border-color)',
+                                position: 'relative',
+                                color: 'var(--text-primary)'
                             }}
                         >
                             <FaBell />
@@ -341,13 +369,14 @@ const Dashboard = () => {
                                     position: 'absolute',
                                     top: '0',
                                     right: '0',
-                                    background: '#ff4d4d',
+                                    background: 'var(--danger)',
                                     color: 'white',
                                     borderRadius: '50%',
-                                    padding: '2px 5px',
-                                    fontSize: '9px',
+                                    padding: '2px 6px',
+                                    fontSize: '10px',
                                     fontWeight: 'bold',
-                                    transform: 'translate(25%, -25%)'
+                                    transform: 'translate(25%, -25%)',
+                                    border: '2px solid var(--card-bg)'
                                 }}>
                                     {upcomingPayments.length}
                                 </span>
@@ -357,44 +386,43 @@ const Dashboard = () => {
                         {showNotifications && (
                             <div style={{
                                 position: 'absolute',
-                                top: '50px',
+                                top: '55px',
                                 right: '0',
-                                width: '320px',
-                                background: '#1a1a1a',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '12px',
-                                padding: '15px',
+                                width: '340px',
+                                background: 'var(--card-bg)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '16px',
+                                padding: '20px',
                                 zIndex: 1000,
-                                boxShadow: '0 10px 40px rgba(0,0,0,0.6)',
+                                boxShadow: 'var(--shadow)',
                                 animation: 'fadeIn 0.2s ease-out'
                             }}>
-                                <h4 style={{ margin: '0 0 15px 0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', color: '#43e97b' }}>
+                                <h4 style={{ margin: '0 0 15px 0', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', color: 'var(--primary)', fontSize: '1rem' }}>
                                     Upcoming Renewals
                                 </h4>
                                 {upcomingPayments.length === 0 ? (
-                                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: '10px 0' }}>No payments due in next 7 days</p>
+                                    <p style={{ fontSize: '14px', color: 'var(--text-secondary)', textAlign: 'center', padding: '20px 0' }}>No payments due soon</p>
                                 ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
                                         {upcomingPayments.map(sub => (
                                             <div key={sub._id} style={{
                                                 display: 'flex',
                                                 justifyContent: 'space-between',
                                                 alignItems: 'center',
-                                                padding: '8px',
-                                                borderRadius: '8px',
-                                                background: 'rgba(255,255,255,0.02)'
+                                                padding: '10px 12px',
+                                                borderRadius: '12px',
+                                                background: 'var(--background)',
+                                                border: '1px solid var(--border-color)'
                                             }}>
                                                 <div>
                                                     <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px' }}>{sub.name}</p>
-                                                    <p style={{ margin: 0, fontSize: '11px', color: sub.daysUntilRenewal <= 1 ? '#ff4d4d' : '#ff9800' }}>
-                                                        {sub.daysUntilRenewal < 0 ? `Overdue by ${Math.abs(sub.daysUntilRenewal)}d` :
-                                                            sub.daysUntilRenewal === 0 ? 'Due Today' :
-                                                                sub.daysUntilRenewal === 1 ? 'Due Tomorrow' : `In ${sub.daysUntilRenewal} days`}
+                                                    <p style={{ margin: 0, fontSize: '12px', color: sub.daysUntilRenewal <= 1 ? 'var(--danger)' : 'var(--text-secondary)' }}>
+                                                        {sub.daysUntilRenewal === 0 ? 'Due Today' :
+                                                            sub.daysUntilRenewal === 1 ? 'Due Tomorrow' : `In ${sub.daysUntilRenewal} days`}
                                                     </p>
                                                 </div>
                                                 <div style={{ textAlign: 'right' }}>
-                                                    <p style={{ margin: 0, fontWeight: 'bold', color: '#43e97b' }}>₹{sub.price}</p>
-                                                    <p style={{ margin: 0, fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>{sub.category}</p>
+                                                    <p style={{ margin: 0, fontWeight: 'bold', color: 'var(--primary)', fontSize: '14px' }}>₹{sub.price}</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -404,70 +432,71 @@ const Dashboard = () => {
                         )}
                     </div>
 
-                    <button onClick={() => navigate('/profile')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px', borderRadius: '50%', padding: '10px' }}>
+                    <button onClick={() => navigate('/profile')} className="btn" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        borderRadius: '50%',
+                        padding: '12px',
+                        background: 'var(--background)',
+                        color: 'var(--text-primary)',
+                        border: '1px solid var(--border-color)'
+                    }}>
                         <FaUserCircle />
                     </button>
-                    <button onClick={handleLogout} className="btn">Logout</button>
+                    <button onClick={handleLogout} className="btn" style={{ background: 'var(--danger)', color: '#fff' }}>Logout</button>
                 </div>
             </header>
 
             {/* Upcoming Payment Alerts */}
             {!showForm && upcomingPayments.length > 0 && (
                 <div style={{
-                    background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 142, 83, 0.1) 100%)',
-                    backdropFilter: 'blur(10px)',
-                    padding: '20px',
-                    borderRadius: '15px',
-                    border: '1px solid rgba(255, 107, 107, 0.3)',
+                    background: 'var(--background)',
+                    padding: '25px',
+                    borderRadius: '20px',
+                    border: '1px solid var(--border-color)',
                     marginBottom: '30px'
                 }}>
-                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', fontSize: '20px', color: '#ff6b6b' }}>
-                        <FaBell /> Upcoming Payments ({upcomingPayments.length})
+                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', fontSize: '1.2rem', color: 'var(--primary)' }}>
+                        <FaBell /> Priorities
                     </h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '15px' }}>
-                        {upcomingPayments.map((payment) => {
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                        {upcomingPayments.slice(0, 3).map((payment) => {
                             const isUrgent = payment.daysUntilRenewal <= 2;
                             return (
                                 <div
                                     key={payment._id}
                                     style={{
-                                        background: isUrgent
-                                            ? 'linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 68, 68, 0.2) 100%)'
-                                            : 'linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 152, 0, 0.2) 100%)',
-                                        padding: '15px',
-                                        borderRadius: '12px',
-                                        border: isUrgent
-                                            ? '1px solid rgba(255, 107, 107, 0.5)'
-                                            : '1px solid rgba(255, 193, 7, 0.5)',
+                                        background: 'var(--card-bg)',
+                                        padding: '20px',
+                                        borderRadius: '16px',
+                                        border: isUrgent ? '1px solid var(--danger)' : '1px solid var(--border-color)',
+                                        boxShadow: 'var(--shadow)'
                                     }}
                                 >
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '10px' }}>
-                                        <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>{payment.name}</h3>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                                        <h3 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0 }}>{payment.name}</h3>
                                         <span style={{
-                                            background: isUrgent ? '#ff6b6b' : '#ffc107',
-                                            color: '#000',
+                                            background: isUrgent ? 'var(--danger)' : 'var(--background)',
+                                            color: isUrgent ? '#fff' : 'var(--text-primary)',
                                             padding: '4px 10px',
-                                            borderRadius: '12px',
-                                            fontSize: '12px',
-                                            fontWeight: 'bold'
+                                            borderRadius: '10px',
+                                            fontSize: '11px',
+                                            fontWeight: 'bold',
+                                            border: isUrgent ? 'none' : '1px solid var(--border-color)'
                                         }}>
                                             {payment.daysUntilRenewal === 0 ? 'TODAY' : `${payment.daysUntilRenewal}d`}
                                         </span>
                                     </div>
-                                    <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)', margin: '5px 0' }}>
-                                        {payment.category}
+                                    <p style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--primary)', margin: '0 0 10px 0' }}>
+                                        ₹{payment.price}
                                     </p>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                                        <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#43e97b', margin: '5px 0' }}>
-                                            ₹{payment.price}
-                                        </p>
-                                        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
-                                            {payment.billingCycle}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{payment.category}</span>
+                                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', opacity: 0.7 }}>
+                                            {new Date(payment.nextRenewalDate).toLocaleDateString()}
                                         </span>
                                     </div>
-                                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginTop: '8px', marginBottom: 0 }}>
-                                        Due: {new Date(payment.nextRenewalDate).toLocaleDateString()}
-                                    </p>
                                 </div>
                             );
                         })}
@@ -479,113 +508,98 @@ const Dashboard = () => {
             {!showForm && (
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                    gap: '15px',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '20px',
                     marginBottom: '30px'
                 }}>
                     <div style={{
-                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%)',
-                        backdropFilter: 'blur(10px)',
-                        padding: '20px',
-                        borderRadius: '15px',
-                        border: '1px solid rgba(102, 126, 234, 0.3)',
-                        textAlign: 'center'
+                        background: 'var(--card-bg)',
+                        padding: '25px',
+                        borderRadius: '20px',
+                        border: '1px solid var(--border-color)',
+                        textAlign: 'center',
+                        boxShadow: 'var(--shadow)'
                     }}>
-                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-                            <FaCheckCircle style={{ fontSize: '32px', color: '#667eea' }} />
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                            <FaCheckCircle style={{ fontSize: '28px', color: 'var(--primary)' }} />
                         </div>
-                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Active</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#667eea', margin: 0 }}>{analyticsSummary.activeCount}</p>
+                        <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Active</h3>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>{analyticsSummary.activeCount}</p>
                     </div>
 
                     <div style={{
-                        background: 'linear-gradient(135deg, rgba(67, 233, 123, 0.2) 0%, rgba(56, 239, 125, 0.2) 100%)',
-                        backdropFilter: 'blur(10px)',
-                        padding: '20px',
-                        borderRadius: '15px',
-                        border: '1px solid rgba(67, 233, 123, 0.3)',
-                        textAlign: 'center'
+                        background: 'var(--card-bg)',
+                        padding: '25px',
+                        borderRadius: '20px',
+                        border: '1px solid var(--border-color)',
+                        textAlign: 'center',
+                        boxShadow: 'var(--shadow)'
                     }}>
-                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-                            <FaWallet style={{ fontSize: '32px', color: '#43e97b' }} />
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                            <FaWallet style={{ fontSize: '28px', color: 'var(--primary)' }} />
                         </div>
-                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Current Month Spending</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#43e97b', margin: '0 0 5px 0' }}>₹{analyticsSummary.monthlyTotal}</p>
-                        <span style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.6)', fontStyle: 'italic' }}>
-                            Dynamic Calculation
-                        </span>
+                        <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Monthly Total</h3>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>₹{analyticsSummary.monthlyTotal}</p>
                     </div>
 
                     <div style={{
-                        background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 193, 7, 0.2) 100%)',
-                        backdropFilter: 'blur(10px)',
-                        padding: '20px',
-                        borderRadius: '15px',
-                        border: '1px solid rgba(255, 152, 0, 0.3)',
-                        textAlign: 'center'
+                        background: 'var(--card-bg)',
+                        padding: '25px',
+                        borderRadius: '20px',
+                        border: '1px solid var(--border-color)',
+                        textAlign: 'center',
+                        boxShadow: 'var(--shadow)'
                     }}>
-                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-                            <FaBell style={{ fontSize: '32px', color: '#ff9800' }} />
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                            <FaBell style={{ fontSize: '28px', color: '#ff9800' }} />
                         </div>
-                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Upcoming</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{analyticsSummary.upcomingCount}</p>
+                        <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Upcoming</h3>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{analyticsSummary.upcomingCount || 0}</p>
                     </div>
 
                     <div style={{
-                        background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 152, 0, 0.2) 100%)',
-                        backdropFilter: 'blur(10px)',
-                        padding: '20px',
-                        borderRadius: '15px',
-                        border: '1px solid rgba(255, 193, 7, 0.3)',
-                        textAlign: 'center'
+                        background: 'var(--card-bg)',
+                        padding: '25px',
+                        borderRadius: '20px',
+                        border: '1px solid var(--border-color)',
+                        textAlign: 'center',
+                        boxShadow: 'var(--shadow)'
                     }}>
-                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-                            <FaWallet style={{ fontSize: '32px', color: '#ff9800' }} />
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                            <FaFileAlt style={{ fontSize: '28px', color: 'var(--danger)' }} />
                         </div>
-                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>All Time Spent</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>₹{analyticsSummary.allTimeTotal || 0}</p>
-                    </div>
-
-                    <div style={{
-                        background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 68, 68, 0.2) 100%)',
-                        backdropFilter: 'blur(10px)',
-                        padding: '20px',
-                        borderRadius: '15px',
-                        border: '1px solid rgba(255, 107, 107, 0.3)',
-                        textAlign: 'center'
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-                            <FaFileAlt style={{ fontSize: '32px', color: '#ff6b6b' }} />
-                        </div>
-                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Expired</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff6b6b', margin: 0 }}>{analyticsSummary.expiredCount}</p>
+                        <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Expired</h3>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--danger)', margin: 0 }}>{analyticsSummary.expiredCount || 0}</p>
                     </div>
                 </div>
             )}
+
             {/* Budget Tracker */}
             {!showForm && (
                 <div style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    padding: '25px',
-                    borderRadius: '15px',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    marginBottom: '30px'
+                    background: 'var(--card-bg)',
+                    padding: '30px',
+                    borderRadius: '24px',
+                    border: '1px solid var(--border-color)',
+                    marginBottom: '40px',
+                    boxShadow: 'var(--shadow)'
                 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <h2 style={{ fontSize: '20px', color: '#43e97b', margin: 0 }}>Monthly Budget Tracker</h2>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <label style={{ fontSize: '14px', opacity: 0.8 }}>Limit: ₹</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', flexWrap: 'wrap', gap: '20px' }}>
+                        <h2 style={{ fontSize: '1.2rem', color: 'var(--primary)', margin: 0 }}>Monthly Budget Tracker</h2>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Limit: ₹</span>
                             <input
                                 type="number"
                                 defaultValue={budgetData.budget?.monthlyLimit || 0}
                                 onBlur={(e) => handleBudgetUpdate(e.target.value)}
                                 style={{
-                                    background: 'rgba(0,0,0,0.3)',
-                                    border: '1px solid rgba(67, 233, 123, 0.3)',
-                                    color: '#fff',
-                                    padding: '5px 10px',
-                                    borderRadius: '5px',
-                                    width: '100px'
+                                    background: 'var(--background)',
+                                    border: '1px solid var(--border-color)',
+                                    color: 'var(--text-primary)',
+                                    padding: '10px 15px',
+                                    borderRadius: '12px',
+                                    width: '140px',
+                                    fontWeight: 'bold'
                                 }}
                             />
                         </div>
@@ -593,71 +607,81 @@ const Dashboard = () => {
 
                     {budgetData.budget?.monthlyLimit > 0 ? (
                         <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                <span style={{ fontSize: '14px' }}>Utilization: {budgetData.budget.monthlyLimit > 0 ? ((budgetData.monthlySpending / budgetData.budget.monthlyLimit) * 100).toFixed(1) : 0}%</span>
-                                <span style={{ fontSize: '14px' }}>₹{budgetData.monthlySpending.toFixed(2)} / ₹{budgetData.budget.monthlyLimit}</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                                <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Utilization: {((budgetData.monthlySpending / budgetData.budget.monthlyLimit) * 100).toFixed(1)}%</span>
+                                <span style={{ fontSize: '15px', color: 'var(--text-primary)', fontWeight: 'bold' }}>₹{budgetData.monthlySpending.toFixed(2)} / ₹{budgetData.budget.monthlyLimit}</span>
                             </div>
                             <div style={{
                                 width: '100%',
                                 height: '12px',
-                                background: 'rgba(255,255,255,0.1)',
-                                borderRadius: '6px',
-                                overflow: 'hidden'
+                                background: 'var(--background)',
+                                borderRadius: '10px',
+                                overflow: 'hidden',
+                                border: '1px solid var(--border-color)'
                             }}>
                                 <div style={{
                                     width: `${Math.min((budgetData.monthlySpending / budgetData.budget.monthlyLimit) * 100, 100)}%`,
                                     height: '100%',
-                                    background: budgetData.monthlySpending > budgetData.budget.monthlyLimit ? '#ff4d4d' : '#43e97b',
-                                    transition: 'width 0.5s ease-out'
+                                    background: budgetData.monthlySpending > budgetData.budget.monthlyLimit ? 'var(--danger)' : 'var(--primary)',
+                                    transition: 'width 0.8s ease-in-out'
                                 }}></div>
                             </div>
                             {budgetData.monthlySpending > budgetData.budget.monthlyLimit && (
-                                <p style={{ color: '#ff4d4d', fontSize: '12px', marginTop: '10px', fontWeight: 'bold' }}>
-                                    Warning: You have exceeded your monthly budget!
+                                <p style={{ color: 'var(--danger)', fontSize: '13px', marginTop: '12px', fontWeight: 'bold' }}>
+                                    ⚠️ Attention: Monthly limit exceeded.
                                 </p>
                             )}
                         </div>
                     ) : (
-                        <p style={{ margin: 0, opacity: 0.6, fontStyle: 'italic' }}>Set a monthly limit to track your spending utilization.</p>
+                        <p style={{ margin: 0, color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '14px' }}>Set a monthly limit to visualize your spending habits.</p>
                     )}
                 </div>
             )}
 
             {/* Controls Area */}
             {!showForm && (
-                <FilterBar
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    status={filterStatus}
-                    setStatus={setFilterStatus}
-                    category={filterCategory}
-                    setCategory={setFilterCategory}
-                    categories={categories.filter(c => c !== 'All')}
-                    billingCycle={billingCycle}
-                    setBillingCycle={setBillingCycle}
-                    minPrice={minPrice}
-                    setMinPrice={setMinPrice}
-                    maxPrice={maxPrice}
-                    setMaxPrice={setMaxPrice}
-                    onReset={resetFilters}
-                />
-            )}
+                <>
+                    <FilterBar
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        status={filterStatus}
+                        setStatus={setFilterStatus}
+                        category={filterCategory}
+                        setCategory={setFilterCategory}
+                        categories={categories.filter(c => c !== 'All')}
+                        billingCycle={billingCycle}
+                        setBillingCycle={setBillingCycle}
+                        minPrice={minPrice}
+                        setMinPrice={setMinPrice}
+                        maxPrice={maxPrice}
+                        setMaxPrice={setMaxPrice}
+                        onReset={resetFilters}
+                    />
 
-            {!showForm && (
-                <div className="controls" style={{ marginBottom: '20px', justifyContent: 'flex-end' }}>
-                    <div className="control-group">
-                        <FaSort style={{ marginRight: '5px', color: '#666' }} />
-                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                            <option value="date-asc">Renewal: Soonest First</option>
-                            <option value="date-desc">Renewal: Latest First</option>
-                            <option value="cost-desc">Cost: High to Low</option>
-                            <option value="cost-asc">Cost: Low to High</option>
-                        </select>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', marginTop: '10px', flexWrap: 'wrap', gap: '15px' }}>
+                        <div className="form-group" style={{
+                            marginBottom: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            background: 'var(--card-bg)',
+                            padding: '5px 15px',
+                            borderRadius: '12px',
+                            border: '1px solid var(--border-color)'
+                        }}>
+                            <FaSort style={{ color: 'var(--text-secondary)', fontSize: '14px' }} />
+                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ border: 'none', background: 'transparent', padding: '8px', cursor: 'pointer', outline: 'none' }}>
+                                <option value="date-asc">Due Soon</option>
+                                <option value="date-desc">Latest First</option>
+                                <option value="cost-desc">High Cost</option>
+                                <option value="cost-asc">Low Cost</option>
+                            </select>
+                        </div>
+                        <button className="btn" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 25px', borderRadius: '14px' }}>
+                            <FaPlus /> New Subscription
+                        </button>
                     </div>
-                    <button className="btn" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <FaPlus /> Add New
-                    </button>
-                </div>
+                </>
             )}
 
             <div className="content">
@@ -670,28 +694,7 @@ const Dashboard = () => {
                     />
                 )}
 
-                {/* Expiring Soon Section */}
-                {!showForm && expiringSoon.length > 0 && (
-                    <section style={{
-                        background: 'rgba(255, 152, 0, 0.1)',
-                        border: '2px solid rgba(255, 152, 0, 0.5)',
-                        borderRadius: '15px',
-                        padding: '20px',
-                        marginBottom: '30px'
-                    }}>
-                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                            <FaBell style={{ color: '#ff9800' }} />
-                            Expiring Soon ({expiringSoon.length})
-                        </h2>
-                        <div className="subscriptions">
-                            {expiringSoon.map((sub) => (
-                                <SubscriptionItem key={sub._id} subscription={sub} onDelete={deleteSubscription} onEdit={startEdit} onPay={() => handlePayClick(sub)} />
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                <section className="content">
+                <section>
                     {filteredSubscriptions.length > 0 ? (
                         <div className="subscriptions">
                             {filteredSubscriptions.map((sub) => (
@@ -708,18 +711,19 @@ const Dashboard = () => {
                     ) : (
                         !showForm && (
                             <div style={{
-                                background: 'rgba(255,255,255,0.08)',
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                borderRadius: '12px',
-                                padding: '30px',
+                                background: 'var(--card-bg)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '20px',
+                                padding: '60px 40px',
                                 textAlign: 'center',
-                                color: 'rgba(255,255,255,0.8)'
+                                color: 'var(--text-secondary)',
+                                boxShadow: 'var(--shadow)'
                             }}>
-                                <h3 style={{ marginBottom: '10px' }}>No subscriptions yet</h3>
-                                <p style={{ marginBottom: '20px' }}>
-                                    Start by adding your first subscription to track renewals and spending.
+                                <h3 style={{ marginBottom: '15px', color: 'var(--text-primary)' }}>Everything looks clear!</h3>
+                                <p style={{ marginBottom: '30px', fontSize: '15px' }}>
+                                    No subscriptions match your current filters. Clear them or add a new one.
                                 </p>
-                                <button className="btn" onClick={() => setShowForm(true)}>Add Subscription</button>
+                                <button className="btn" onClick={() => setShowForm(true)}>Add First Subscription</button>
                             </div>
                         )
                     )}

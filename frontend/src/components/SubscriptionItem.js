@@ -5,18 +5,18 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay, onPause }) =>
         const { status } = subscription;
 
         if (status === 'Paused') {
-            return { label: 'Paused', color: '#888', icon: '⏸️' };
+            return { label: 'Paused', color: 'var(--text-secondary)', icon: '⏸️' };
         }
 
         if (status === 'Upcoming') {
-            return { label: 'Upcoming', color: '#ffc107', icon: '🟡' };
+            return { label: 'Upcoming', color: '#ff9800', icon: '🟡' };
         }
 
         if (status === 'Expired') {
-            return { label: 'Expired', color: '#ff4d4d', icon: '🔴' };
+            return { label: 'Expired', color: 'var(--danger)', icon: '🔴' };
         }
 
-        return { label: 'Active', color: '#43e97b', icon: '🟢' };
+        return { label: 'Active', color: 'var(--primary)', icon: '🟢' };
     };
 
     const getDueIndicator = () => {
@@ -31,14 +31,14 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay, onPause }) =>
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         let label = '';
-        let color = '#43e97b';
+        let color = 'var(--primary)';
 
         if (diffDays < 0) {
             label = `Overdue by ${Math.abs(diffDays)}d`;
-            color = '#ff4d4d';
+            color = 'var(--danger)';
         } else if (diffDays === 0) {
             label = 'Due Today';
-            color = '#ff4d4d';
+            color = 'var(--danger)';
         } else if (diffDays === 1) {
             label = 'Due Tomorrow';
             color = '#ff9800';
@@ -47,7 +47,7 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay, onPause }) =>
             color = '#ff9800';
         } else {
             label = `Next: ${nextDue.toLocaleDateString()}`;
-            color = '#43e97b';
+            color = 'var(--primary)';
         }
 
         return { label, color, diffDays };
@@ -57,21 +57,18 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay, onPause }) =>
     const dueInfo = getDueIndicator();
 
     return (
-        <div className="subscription-item" style={{
-            position: 'relative',
-            border: `1px solid rgba(255, 255, 255, 0.2)`
-        }}>
+        <div className="subscription-item">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                <h3>{subscription.name}</h3>
+                <h3 style={{ margin: 0, fontSize: '1.2rem' }}>{subscription.name}</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end', gap: '5px' }}>
                     <div style={{
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '5px',
-                        padding: '2px 10px',
-                        borderRadius: '10px',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: `1px solid ${lifecycle.color}`,
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        background: 'var(--background)',
+                        border: `1px solid var(--border-color)`,
                     }}>
                         <span style={{ fontSize: '10px' }}>{lifecycle.icon}</span>
                         <span style={{ fontSize: '11px', fontWeight: 'bold', color: lifecycle.color }}>{lifecycle.label}</span>
@@ -82,9 +79,8 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay, onPause }) =>
                             fontWeight: 'bold',
                             color: '#fff',
                             background: dueInfo.color,
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            opacity: 0.9
+                            padding: '3px 8px',
+                            borderRadius: '6px',
                         }}>
                             {dueInfo.label}
                         </div>
@@ -92,49 +88,69 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay, onPause }) =>
                 </div>
             </div>
 
-            <p style={{ margin: '5px 0' }}>Category: {subscription.category || 'N/A'}</p>
-            <p style={{ fontSize: '18px', fontWeight: 'bold', margin: '10px 0', color: '#43e97b' }}>
-                ₹{subscription.price} <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', fontWeight: 'normal' }}>/ {subscription.billingCycle}</span>
+            <p style={{ margin: '10px 0', fontSize: '13px' }}>Category: {subscription.category || 'N/A'}</p>
+            <p style={{ fontSize: '20px', fontWeight: 'bold', margin: '15px 0', color: 'var(--primary)' }}>
+                ₹{subscription.price} <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'normal' }}>/ {subscription.billingCycle}</span>
             </p>
 
-            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '8px', margin: '10px 0' }}>
-                <p style={{ fontSize: '13px', margin: '0' }}>Total Spent: <strong>₹{subscription.totalAmountSpent || 0}</strong></p>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: '5px 0 0 0', display: 'flex', justifyContent: 'space-between' }}>
+            <div style={{ background: 'var(--background)', padding: '12px', borderRadius: '12px', margin: '15px 0', border: '1px solid var(--border-color)' }}>
+                <p style={{ fontSize: '13px', margin: '0', color: 'var(--text-primary)' }}>Total Spent: <strong>₹{subscription.totalAmountSpent || 0}</strong></p>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>Last: {subscription.payments && subscription.payments.length > 0
                         ? new Date(subscription.payments.sort((a, b) => new Date(b.paidOn) - new Date(a.paidOn))[0].paidOn).toLocaleDateString()
                         : 'None'}</span>
-                    <a href={`/subscriptions/${subscription._id}/payments`} style={{ color: '#43e97b', textDecoration: 'none', fontWeight: 'bold' }}>View History</a>
-                </p>
+                    <a href={`/subscriptions/${subscription._id}/payments`} className="link-hover" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>View History</a>
+                </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexWrap: 'wrap' }}>
                 <button
                     onClick={() => onPay(subscription._id)}
+                    className="btn"
                     style={{
-                        flex: 1,
-                        background: 'linear-gradient(135deg, #43e97b 0%, #38ef7d 100%)',
-                        color: '#000',
-                        border: 'none',
-                        padding: '8px',
-                        borderRadius: '6px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer'
+                        flex: '1 1 100%',
+                        padding: '10px',
+                        marginBottom: '8px'
                     }}
                 >
                     Add Payment
                 </button>
                 <button
                     onClick={() => onPause(subscription)}
+                    className="btn btn-secondary"
                     style={{
-                        padding: '8px 12px',
-                        backgroundColor: subscription.status === 'Paused' ? '#43e97b' : '#666',
-                        color: subscription.status === 'Paused' ? '#000' : '#fff'
+                        flex: 1,
+                        padding: '8px',
+                        fontSize: '13px'
                     }}
                 >
                     {subscription.status === 'Paused' ? 'Resume' : 'Pause'}
                 </button>
-                <button onClick={() => onEdit(subscription)} style={{ padding: '8px 12px' }}>Edit</button>
-                <button onClick={() => onDelete(subscription._id)} style={{ backgroundColor: '#ff4d4d', color: 'white', padding: '8px 12px' }}>Delete</button>
+                <button
+                    onClick={() => onEdit(subscription)}
+                    className="btn"
+                    style={{
+                        flex: 1,
+                        padding: '8px',
+                        fontSize: '13px',
+                        background: 'var(--background)',
+                        color: 'var(--text-primary)',
+                        border: '1px solid var(--border-color)'
+                    }}
+                >
+                    Edit
+                </button>
+                <button
+                    onClick={() => onDelete(subscription._id)}
+                    className="btn btn-danger"
+                    style={{
+                        flex: 1,
+                        padding: '8px',
+                        fontSize: '13px'
+                    }}
+                >
+                    Delete
+                </button>
             </div>
         </div>
     );

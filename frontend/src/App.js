@@ -15,6 +15,7 @@ import PaymentHistory from './pages/PaymentHistory';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { ThemeProvider } from './context/ThemeContext';
 import './App.css';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
@@ -22,29 +23,31 @@ const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <Router>
-        <AuthProvider>
-          <div className="container">
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+      <ThemeProvider>
+        <Router>
+          <AuthProvider>
+            <div className="container">
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
 
-              {/* Protected Routes */}
-              <Route path="/" element={<PrivateRoute />}>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/calendar" element={<CalendarView />} />
-                <Route path="/subscriptions/:id/payments" element={<PaymentHistory />} />
-                <Route path="/category-comparison" element={<CategoryComparison />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/profile" element={<Profile />} />
-              </Route>
-            </Routes>
-            <ToastContainer />
-          </div>
-        </AuthProvider>
-      </Router>
+                {/* Protected Routes */}
+                <Route path="/" element={<PrivateRoute />}>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/calendar" element={<CalendarView />} />
+                  <Route path="/subscriptions/:id/payments" element={<PaymentHistory />} />
+                  <Route path="/category-comparison" element={<CategoryComparison />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Route>
+              </Routes>
+              <ToastContainer />
+            </div>
+          </AuthProvider>
+        </Router>
+      </ThemeProvider>
     </GoogleOAuthProvider>
   );
 }
