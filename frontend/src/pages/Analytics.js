@@ -5,7 +5,7 @@ import analyticsService from '../services/analyticsService';
 import Spinner from '../components/Spinner';
 import { toast } from 'react-toastify';
 import { PieChart, Pie, LineChart, Line, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { FaArrowLeft, FaChartPie, FaChartLine, FaTrophy, FaChartBar, FaTimes } from 'react-icons/fa';
+import { FaArrowLeft, FaChartPie, FaChartLine, FaTrophy, FaChartBar } from 'react-icons/fa';
 import FilterBar from '../components/FilterBar';
 
 const Analytics = () => {

@@ -4,7 +4,7 @@ import AuthContext from '../context/AuthContext';
 import subscriptionService from '../services/subscriptionService';
 import Spinner from '../components/Spinner';
 import { toast } from 'react-toastify';
-import { FaArrowLeft, FaFileDownload, FaCalendar, FaTimes } from 'react-icons/fa';
+import { FaArrowLeft, FaFileDownload, FaCalendar } from 'react-icons/fa';
 import FilterBar from '../components/FilterBar';
 
 const Reports = () => {

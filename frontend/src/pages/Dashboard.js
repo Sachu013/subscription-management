@@ -12,8 +12,6 @@ import {
     FaBell,
     FaCheckCircle,
     FaWallet,
-    FaSearch,
-    FaFilter,
     FaSort,
     FaPlus
 } from 'react-icons/fa';

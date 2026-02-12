@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaSearch, FaFilter, FaSort, FaTimes, FaRupeeSign } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaSort, FaTimes } from 'react-icons/fa';
 
 const FilterBar = ({
     searchTerm,
