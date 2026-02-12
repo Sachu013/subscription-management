@@ -69,7 +69,7 @@ const CategoryComparison = () => {
         }
     }, [selectedCategory, fetchComparisonData]);
 
-    const COLORS = ['#789A99', '#FFD2C2', '#9eb5b4', '#f7c0af', '#b8c9c8', '#ffe1d6', '#cbd7d6', '#fff1ec'];
+    const COLORS = ['#AD7D56', '#CDB49E', '#AD7D56', '#CDB49E', '#AD7D56', '#CDB49E', '#AD7D56', '#CDB49E'];
 
     return (
         <section className="dashboard">
@@ -183,7 +183,7 @@ const CategoryComparison = () => {
                                 <div style={{ overflowX: 'auto' }}>
                                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                         <thead>
-                                            <tr style={{ background: 'var(--secondary)', color: '#2c2c2c' }}>
+                                            <tr style={{ background: 'var(--background)', color: 'var(--text-primary)' }}>
                                                 <th style={{ padding: '15px' }}>Rank</th>
                                                 <th style={{ padding: '15px' }}>Subscription</th>
                                                 <th style={{ padding: '15px' }}>Billing Cycle</th>

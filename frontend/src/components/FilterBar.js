@@ -205,14 +205,11 @@ const FilterBar = ({
                     {/* Reset Button */}
                     <button
                         onClick={onReset}
-                        className="btn"
+                        className="btn btn-secondary"
                         style={{
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px',
-                            background: 'var(--background)',
-                            border: '1px solid var(--border-color)',
-                            color: 'var(--text-primary)',
                             height: '42px',
                             padding: '0 20px',
                             fontSize: '14px'

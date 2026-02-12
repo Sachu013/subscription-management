@@ -134,12 +134,11 @@ const Profile = () => {
                     <div style={{
                         marginTop: '30px',
                         padding: '15px',
-                        background: 'var(--secondary)',
+                        background: 'var(--background)',
                         borderRadius: '12px',
                         border: '1px solid var(--border-color)',
-                        opacity: 0.8
                     }}>
-                        <p style={{ fontSize: '13px', color: '#2c2c2c', margin: 0, textAlign: 'center' }}>
+                        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, textAlign: 'center' }}>
                             💡 Account details are managed via your provider.
                         </p>
                     </div>
@@ -192,10 +191,6 @@ const Profile = () => {
                         onClick={handleSaveSettings}
                         className="btn btn-block"
                         style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '10px',
                             marginTop: '30px'
                         }}
                     >

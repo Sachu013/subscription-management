@@ -521,7 +521,7 @@ const Dashboard = () => {
                             <FaCheckCircle style={{ fontSize: '28px', color: 'var(--primary)' }} />
                         </div>
                         <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Active</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>{analyticsSummary.activeCount}</p>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>{analyticsSummary.activeCount}</p>
                     </div>
 
                     <div style={{
@@ -536,7 +536,7 @@ const Dashboard = () => {
                             <FaWallet style={{ fontSize: '28px', color: 'var(--primary)' }} />
                         </div>
                         <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Monthly Total</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>₹{analyticsSummary.monthlyTotal}</p>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>₹{analyticsSummary.monthlyTotal}</p>
                     </div>
 
                     <div style={{
@@ -548,10 +548,10 @@ const Dashboard = () => {
                         boxShadow: 'var(--shadow)'
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
-                            <FaBell style={{ fontSize: '28px', color: '#ff9800' }} />
+                            <FaBell style={{ fontSize: '28px', color: 'var(--primary)' }} />
                         </div>
                         <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Upcoming</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{analyticsSummary.upcomingCount || 0}</p>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>{analyticsSummary.upcomingCount || 0}</p>
                     </div>
 
                     <div style={{

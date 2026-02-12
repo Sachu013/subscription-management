@@ -88,9 +88,8 @@ header {
 
 .form-group input:focus,
 .form-group select:focus {
-  outline: none;
+  outline: 2px solid var(--primary);
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(120, 154, 153, 0.2);
 }
 
 /* Dropdown specific fixes */
@@ -125,9 +124,9 @@ select option {
 
 .btn:hover {
   background: var(--primary);
-  filter: brightness(1.1);
+  filter: brightness(0.9);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(120, 154, 153, 0.25);
+  box-shadow: 0 4px 12px rgba(173, 125, 86, 0.2);
 }
 
 .btn:active {
@@ -135,15 +134,18 @@ select option {
 }
 
 .btn-secondary {
-  background: var(--secondary);
-  color: #2c2c2c;
+  background: #E8DFD6;
+  color: #2B2B2B;
   border: 1px solid var(--border-color);
 }
 
+[data-theme="dark"] .btn-secondary {
+  background: #2A2A2A;
+  color: var(--text-primary);
+}
+
 .btn-secondary:hover {
-  background: var(--secondary);
-  filter: brightness(1.05);
-  box-shadow: 0 4px 12px rgba(255, 210, 194, 0.25);
+  filter: brightness(0.95);
 }
 
 .btn-danger {

@@ -76,7 +76,8 @@ const Analytics = () => {
     }, [user, navigate, globalStatus, globalCategory, breakdownFilter, topSubFilter]);
 
     // Use theme-aware colors for charts
-    const COLORS = ['#789A99', '#FFD2C2', '#9eb5b4', '#f7c0af', '#b8c9c8', '#ffe1d6', '#cbd7d6', '#fff1ec'];
+    // Use theme-aware colors for charts
+    const COLORS = ['#AD7D56', '#CDB49E', '#AD7D56', '#CDB49E', '#AD7D56', '#CDB49E', '#AD7D56', '#CDB49E'];
 
     if (isLoading) {
         return <Spinner />;
@@ -156,7 +157,7 @@ const Analytics = () => {
                     boxShadow: 'var(--shadow)'
                 }}>
                     <h3 style={{ fontSize: '14px', marginBottom: '10px', color: 'var(--text-secondary)' }}>Current Month</h3>
-                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#789A99', margin: 0 }}>₹{metrics?.monthlyTotal || 0}</p>
+                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>₹{metrics?.monthlyTotal || 0}</p>
                 </div>
                 <div style={{
                     background: 'var(--card-bg)',
