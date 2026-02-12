@@ -29,7 +29,7 @@ const subscriptionSchema = mongoose.Schema(
         },
         billingCycle: {
             type: String,
-            enum: ['Monthly', 'Yearly'],
+            enum: ['Monthly', 'Yearly', 'monthly', 'yearly'],
             default: 'Monthly',
             required: [true, 'Please add a billing cycle'],
         },
@@ -50,5 +50,12 @@ const subscriptionSchema = mongoose.Schema(
         timestamps: true,
     }
 );
+
+// Pre-save hook to normalize billingCycle
+subscriptionSchema.pre('save', function (next) {
+    if (this.billingCycle === 'monthly') this.billingCycle = 'Monthly';
+    if (this.billingCycle === 'yearly') this.billingCycle = 'Yearly';
+    next();
+});
 
 module.exports = mongoose.model('Subscription', subscriptionSchema);

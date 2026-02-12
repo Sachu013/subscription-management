@@ -1,7 +1,20 @@
 /**
+ * Helper to add a billing cycle to a date
+ */
+const addCycle = (date, cycle) => {
+    const d = new Date(date);
+    const normalizedCycle = cycle ? cycle.toLowerCase() : 'monthly';
+
+    if (normalizedCycle === 'monthly') {
+        d.setMonth(d.getMonth() + 1);
+    } else if (normalizedCycle === 'yearly') {
+        d.setFullYear(d.getFullYear() + 1);
+    }
+    return d;
+};
+
+/**
  * Calculate subscription status dynamically
- * @param {Object} sub - Subscription object
- * @returns {string} - 'Active', 'Expired', or 'Upcoming'
  */
 const getSubscriptionStatus = (sub) => {
     const today = new Date();
@@ -17,25 +30,14 @@ const getSubscriptionStatus = (sub) => {
 
     const payments = sub.payments || [];
 
-    // 2. Handle billing cycle addition
-    const addCycle = (date, cycle) => {
-        const d = new Date(date);
-        if (cycle === 'Monthly') {
-            d.setMonth(d.getMonth() + 1);
-        } else if (cycle === 'Yearly') {
-            d.setFullYear(d.getFullYear() + 1);
-        }
-        return d;
-    };
-
-    // 3. Expired if no payments exist AND today > startDate + 1 billing cycle
+    // 2. Expired if no payments exist AND today > startDate + 1 billing cycle
     if (payments.length === 0) {
         const firstDue = addCycle(start, sub.billingCycle);
         if (today > firstDue) return "Expired";
         return "Active"; // Within the first grace period
     }
 
-    // 4. Sort payments by date to find the latest
+    // 3. Sort payments by date to find the latest
     const sortedPayments = [...payments].sort((a, b) => new Date(b.paidOn) - new Date(a.paidOn));
     const lastPaymentDate = new Date(sortedPayments[0].paidOn);
     lastPaymentDate.setHours(0, 0, 0, 0);
@@ -43,7 +45,7 @@ const getSubscriptionStatus = (sub) => {
     const nextDue = addCycle(lastPaymentDate, sub.billingCycle);
     nextDue.setHours(0, 0, 0, 0);
 
-    // 5. Active if latest payment + billing cycle >= today
+    // 4. Active if latest payment + billing cycle >= today
     if (today <= nextDue) {
         return "Active";
     }
@@ -76,16 +78,6 @@ const getNextDueDate = (sub) => {
     const start = new Date(sub.startDate);
     const payments = sub.payments || [];
 
-    const addCycle = (date, cycle) => {
-        const d = new Date(date);
-        if (cycle === 'Monthly') {
-            d.setMonth(d.getMonth() + 1);
-        } else if (cycle === 'Yearly') {
-            d.setFullYear(d.getFullYear() + 1);
-        }
-        return d;
-    };
-
     if (payments.length === 0) {
         return addCycle(start, sub.billingCycle);
     }
@@ -109,8 +101,9 @@ const isActiveInMonth = (sub, month, year) => {
  * Get monthly normalized cost for comparison
  */
 const getNormalizedMonthlyCost = (sub) => {
-    if (sub.billingCycle === 'Monthly') return sub.price;
-    if (sub.billingCycle === 'Yearly') return sub.price / 12;
+    const cycle = sub.billingCycle ? sub.billingCycle.toLowerCase() : 'monthly';
+    if (cycle === 'monthly') return sub.price;
+    if (cycle === 'yearly') return sub.price / 12;
     return sub.price;
 };
 
