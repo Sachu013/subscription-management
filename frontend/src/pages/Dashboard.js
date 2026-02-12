@@ -47,16 +47,14 @@ const Dashboard = () => {
 
                     if (token) {
                         // Fetch subscriptions and analytics in parallel
-                        const [subs, summary, upcoming] = await Promise.all([
+                        const [subs, summary] = await Promise.all([
                             subscriptionService.getSubscriptions(token),
-                            analyticsService.getAnalyticsSummary(token),
-                            subscriptionService.getUpcomingPayments(token)
+                            analyticsService.getAnalyticsSummary(token)
                         ]);
 
                         setSubscriptions(subs);
                         setFilteredSubscriptions(subs);
                         setAnalyticsSummary(summary);
-                        setUpcomingPayments(upcoming);
                     }
                 } catch (error) {
                     const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
@@ -90,24 +88,71 @@ const Dashboard = () => {
         // Sort
         result.sort((a, b) => {
             if (sortBy === 'date-asc') {
-                return new Date(a.nextBillingDate) - new Date(b.nextBillingDate);
+                const dateA = a.nextRenewalDate ? new Date(a.nextRenewalDate) : new Date(8640000000000000);
+                const dateB = b.nextRenewalDate ? new Date(b.nextRenewalDate) : new Date(8640000000000000);
+                return dateA - dateB;
             } else if (sortBy === 'date-desc') {
-                return new Date(b.nextBillingDate) - new Date(a.nextBillingDate);
+                const dateA = a.nextRenewalDate ? new Date(a.nextRenewalDate) : new Date(0);
+                const dateB = b.nextRenewalDate ? new Date(b.nextRenewalDate) : new Date(0);
+                return dateB - dateA;
             } else if (sortBy === 'cost-asc') {
-                return a.cost - b.cost;
+                return a.price - b.price;
             } else if (sortBy === 'cost-desc') {
-                return b.cost - a.cost;
+                return b.price - a.price;
             }
             return 0;
         });
 
         setFilteredSubscriptions(result);
+
+        // Update Upcoming Payments (within 7 days)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const sevenDaysLater = new Date(today);
+        sevenDaysLater.setDate(today.getDate() + 7);
+
+        const upcoming = result.filter(sub => {
+            if (!sub.nextRenewalDate || sub.calculatedStatus !== 'ACTIVE') return false;
+            const renewalDate = new Date(sub.nextRenewalDate);
+            renewalDate.setHours(0, 0, 0, 0);
+            return renewalDate >= today && renewalDate <= sevenDaysLater;
+        }).map(sub => {
+            const renewalDate = new Date(sub.nextRenewalDate);
+            renewalDate.setHours(0, 0, 0, 0);
+            const diffTime = renewalDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return {
+                ...sub,
+                daysUntilRenewal: diffDays
+            };
+        }).sort((a, b) => a.daysUntilRenewal - b.daysUntilRenewal);
+
+        setUpcomingPayments(upcoming);
     }, [subscriptions, searchTerm, filterCategory, sortBy]);
 
 
     const handleLogout = () => {
         logout();
         navigate('/login');
+    };
+
+    const handlePay = async (id) => {
+        setIsLoading(true);
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            const token = storedUser.token;
+            const updatedSub = await subscriptionService.paySubscription(id, token);
+
+            setSubscriptions(subscriptions.map(sub => (sub._id === id ? updatedSub : sub)));
+
+            const summary = await analyticsService.getAnalyticsSummary(token);
+            setAnalyticsSummary(summary);
+            toast.success('Payment recorded!');
+        } catch (error) {
+            toast.error('Error recording payment');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const createSubscription = async (formData) => {
@@ -280,15 +325,15 @@ const Dashboard = () => {
                                         {payment.category}
                                     </p>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#43e97b' }}>
-                                            ₹{payment.cost}
-                                        </span>
+                                        <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#43e97b', margin: '5px 0' }}>
+                                            ₹{payment.price}
+                                        </p>
                                         <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
                                             {payment.billingCycle}
                                         </span>
                                     </div>
                                     <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginTop: '8px', marginBottom: 0 }}>
-                                        Due: {new Date(payment.nextBillingDate).toLocaleDateString()}
+                                        Due: {new Date(payment.nextRenewalDate).toLocaleDateString()}
                                     </p>
                                 </div>
                             );
@@ -350,17 +395,22 @@ const Dashboard = () => {
                             <FaBell style={{ fontSize: '32px', color: '#ff9800' }} />
                         </div>
                         <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Upcoming</h3>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', alignItems: 'center' }}>
-                            <div>
-                                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{analyticsSummary.upcomingCount}</p>
-                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Total</p>
-                            </div>
-                            <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.2)' }}></div>
-                            <div>
-                                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#43e97b', margin: 0 }}>{analyticsSummary.upcomingDueSoonCount || 0}</p>
-                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Due Soon</p>
-                            </div>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{analyticsSummary.upcomingCount}</p>
+                    </div>
+
+                    <div style={{
+                        background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 152, 0, 0.2) 100%)',
+                        backdropFilter: 'blur(10px)',
+                        padding: '20px',
+                        borderRadius: '15px',
+                        border: '1px solid rgba(255, 193, 7, 0.3)',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+                            <FaWallet style={{ fontSize: '32px', color: '#ff9800' }} />
                         </div>
+                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>All Time Spent</h3>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>₹{analyticsSummary.allTimeTotal || 0}</p>
                     </div>
 
                     <div style={{
@@ -443,7 +493,7 @@ const Dashboard = () => {
                         </h2>
                         <div className="subscriptions">
                             {expiringSoon.map((sub) => (
-                                <SubscriptionItem key={sub._id} subscription={sub} onDelete={deleteSubscription} onEdit={startEdit} />
+                                <SubscriptionItem key={sub._id} subscription={sub} onDelete={deleteSubscription} onEdit={startEdit} onPay={handlePay} />
                             ))}
                         </div>
                     </section>
@@ -453,7 +503,7 @@ const Dashboard = () => {
                     {filteredSubscriptions.length > 0 ? (
                         <div className="subscriptions">
                             {filteredSubscriptions.map((sub) => (
-                                <SubscriptionItem key={sub._id} subscription={sub} onDelete={deleteSubscription} onEdit={startEdit} />
+                                <SubscriptionItem key={sub._id} subscription={sub} onDelete={deleteSubscription} onEdit={startEdit} onPay={handlePay} />
                             ))}
                         </div>
                     ) : (

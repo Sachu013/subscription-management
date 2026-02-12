@@ -1,6 +1,6 @@
 const Subscription = require('../models/subscriptionModel');
 const User = require('../models/userModel');
-const { getSubscriptionStatus } = require('../utils/subscriptionUtils');
+const { getSubscriptionStatus, getTotalAmountSpent, getNextRenewalDate } = require('../utils/subscriptionUtils');
 
 // @desc    Get subscriptions
 // @route   GET /api/subscriptions
@@ -9,21 +9,17 @@ const getSubscriptions = async (req, res) => {
     try {
         const subscriptions = await Subscription.find({ user: req.user.id });
 
-        // Add computedStatus to each subscription
-        const subscriptionsWithStatus = subscriptions.map(sub => {
-            const computedStatus = getSubscriptionStatus(sub);
-
-            // MANDATORY VERIFICATION LOG for Response
-            console.log(`[API RESPONSE] Sub: ${sub.name}, Computed Status: ${computedStatus}`);
-
+        const subscriptionsWithMetadata = subscriptions.map(sub => {
             const subObj = sub.toObject();
             return {
                 ...subObj,
-                computedStatus: computedStatus
+                calculatedStatus: getSubscriptionStatus(subObj),
+                totalAmountSpent: getTotalAmountSpent(subObj),
+                nextRenewalDate: getNextRenewalDate(subObj)
             };
         });
 
-        res.status(200).json(subscriptionsWithStatus);
+        res.status(200).json(subscriptionsWithMetadata);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -36,15 +32,13 @@ const createSubscription = async (req, res) => {
     const {
         name,
         category,
-        cost,
+        price,
         currency,
         startDate,
         billingCycle,
-        nextBillingDate,
-        endDate,
     } = req.body;
 
-    if (!name || !cost || !startDate || !billingCycle || !nextBillingDate) {
+    if (!name || !price || !startDate || !billingCycle) {
         return res.status(400).json({ message: 'Please add all required fields' });
     }
 
@@ -53,12 +47,11 @@ const createSubscription = async (req, res) => {
             user: req.user.id,
             name,
             category,
-            cost,
+            price,
             currency,
             startDate,
             billingCycle,
-            nextBillingDate,
-            endDate,
+            payments: [], // Start with no payments
         });
 
         res.status(201).json(subscription);
@@ -83,7 +76,15 @@ const getSubscriptionById = async (req, res) => {
             return res.status(401).json({ message: 'User not authorized' });
         }
 
-        res.status(200).json(subscription);
+        const subObj = subscription.toObject();
+        const response = {
+            ...subObj,
+            calculatedStatus: getSubscriptionStatus(subObj),
+            totalAmountSpent: getTotalAmountSpent(subObj),
+            nextRenewalDate: getNextRenewalDate(subObj)
+        };
+
+        res.status(200).json(response);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -153,50 +154,36 @@ const deleteSubscription = async (req, res) => {
     }
 };
 
-// @desc    Get upcoming payments (within next 7 days)
-// @route   GET /api/subscriptions/upcoming-payments
+// @desc    Add a payment to subscription
+// @route   POST /api/subscriptions/:id/pay
 // @access  Private
-const getUpcomingPayments = async (req, res) => {
+const paySubscription = async (req, res) => {
     try {
-        const subscriptions = await Subscription.find({ user: req.user.id });
+        const subscription = await Subscription.findById(req.params.id);
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        if (!subscription) {
+            return res.status(404).json({ message: 'Subscription not found' });
+        }
 
-        const sevenDaysFromNow = new Date(today);
-        sevenDaysFromNow.setDate(today.getDate() + 7);
+        if (subscription.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: 'User not authorized' });
+        }
 
-        const upcomingPayments = subscriptions
-            .filter(sub => {
-                // 1. Must be dynamic "Active"
-                if (getSubscriptionStatus(sub) !== 'ACTIVE') return false;
+        const newPayment = {
+            paidOn: new Date(),
+            amount: subscription.price
+        };
 
-                // 2. Check if nextBillingDate is within next 7 days
-                if (!sub.nextBillingDate) return false;
+        subscription.payments.push(newPayment);
+        await subscription.save();
 
-                const nextBilling = new Date(sub.nextBillingDate);
-                nextBilling.setHours(0, 0, 0, 0);
-                return nextBilling >= today && nextBilling <= sevenDaysFromNow;
-            })
-            .map(sub => {
-                const nextBilling = new Date(sub.nextBillingDate);
-                nextBilling.setHours(0, 0, 0, 0);
-                const daysUntilRenewal = Math.ceil((nextBilling - today) / (1000 * 60 * 60 * 24));
-
-                return {
-                    _id: sub._id,
-                    name: sub.name,
-                    category: sub.category,
-                    cost: sub.cost,
-                    currency: sub.currency,
-                    billingCycle: sub.billingCycle,
-                    nextBillingDate: sub.nextBillingDate,
-                    daysUntilRenewal: daysUntilRenewal
-                };
-            })
-            .sort((a, b) => a.daysUntilRenewal - b.daysUntilRenewal);
-
-        res.status(200).json(upcomingPayments);
+        const subObj = subscription.toObject();
+        res.status(200).json({
+            ...subObj,
+            calculatedStatus: getSubscriptionStatus(subObj),
+            totalAmountSpent: getTotalAmountSpent(subObj),
+            nextRenewalDate: getNextRenewalDate(subObj)
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -208,5 +195,5 @@ module.exports = {
     getSubscriptionById,
     updateSubscription,
     deleteSubscription,
-    getUpcomingPayments,
+    paySubscription,
 };

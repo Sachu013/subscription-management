@@ -17,37 +17,37 @@ const Reports = () => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
-const fetchSubscriptions = useCallback(async () => {
-    try {
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        const token = storedUser ? storedUser.token : null;
+    const fetchSubscriptions = useCallback(async () => {
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            const token = storedUser ? storedUser.token : null;
 
-        if (token) {
-            const subs = await subscriptionService.getSubscriptions(token);
-            setSubscriptions(subs);
-            filterSubscriptions(subs, '', '');
+            if (token) {
+                const subs = await subscriptionService.getSubscriptions(token);
+                setSubscriptions(subs);
+                filterSubscriptions(subs, '', '');
+            }
+        } catch (error) {
+            const message =
+                (error.response && error.response.data && error.response.data.message) ||
+                error.message ||
+                error.toString();
+            toast.error(message);
+        } finally {
+            setIsLoading(false);
         }
-    } catch (error) {
-        const message =
-            (error.response && error.response.data && error.response.data.message) ||
-            error.message ||
-            error.toString();
-        toast.error(message);
-    } finally {
-        setIsLoading(false);
-    }
-}, []);
-
-    
+    }, []);
 
 
-    
+
+
+
 
 
     const filterSubscriptions = (subs, start, end) => {
-        // Filter for expired or cancelled subscriptions
+        // Filter for expired subscriptions
         let filtered = subs.filter(sub =>
-            sub.status === 'Expired' || sub.status === 'Cancelled'
+            sub.calculatedStatus === 'EXPIRED'
         );
 
         // Apply date range filter if provided
@@ -65,12 +65,12 @@ const fetchSubscriptions = useCallback(async () => {
     };
 
     useEffect(() => {
-    if (!user) {
-        navigate('/login');
-    } else {
-        fetchSubscriptions();
-    }
-}, [user, navigate, fetchSubscriptions]);
+        if (!user) {
+            navigate('/login');
+        } else {
+            fetchSubscriptions();
+        }
+    }, [user, navigate, fetchSubscriptions]);
 
     const handleGenerateReport = () => {
         if (startDate && endDate) {
@@ -90,17 +90,18 @@ const fetchSubscriptions = useCallback(async () => {
         }
 
         // Create CSV content
-        const headers = ['Name', 'Category', 'Cost', 'Billing Cycle', 'Start Date', 'Status', 'Created At'];
+        const headers = ['Name', 'Category', 'Price', 'Total Spent', 'Billing Cycle', 'Start Date', 'Status', 'Created At'];
         const csvRows = [headers.join(',')];
 
         filteredReports.forEach(sub => {
             const row = [
                 `"${sub.name}"`,
                 `"${sub.category || 'N/A'}"`,
-                sub.cost,
+                sub.price,
+                sub.totalAmountSpent,
                 sub.billingCycle,
                 new Date(sub.startDate).toLocaleDateString(),
-                sub.status,
+                sub.calculatedStatus,
                 new Date(sub.createdAt || sub.startDate).toLocaleDateString()
             ];
             csvRows.push(row.join(','));
@@ -195,19 +196,13 @@ const fetchSubscriptions = useCallback(async () => {
                 gap: '20px'
             }}>
                 <div style={{ textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '5px' }}>Total Records</h3>
+                    <h3 style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '5px' }}>Involved Subscriptions</h3>
                     <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#667eea' }}>{filteredReports.length}</p>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                     <h3 style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '5px' }}>Expired</h3>
                     <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#ff9800' }}>
-                        {filteredReports.filter(s => s.status === 'Expired').length}
-                    </p>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '5px' }}>Cancelled</h3>
-                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#f44336' }}>
-                        {filteredReports.filter(s => s.status === 'Cancelled').length}
+                        {filteredReports.filter(s => s.calculatedStatus === 'EXPIRED').length}
                     </p>
                 </div>
             </div>
@@ -221,16 +216,16 @@ const fetchSubscriptions = useCallback(async () => {
                 border: '1px solid rgba(255, 255, 255, 0.2)',
                 overflowX: 'auto'
             }}>
-                <h2 style={{ marginBottom: '20px' }}>Expired & Cancelled Subscriptions</h2>
+                <h2 style={{ marginBottom: '20px' }}>Subscription History Report</h2>
                 {filteredReports.length > 0 ? (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr style={{ borderBottom: '2px solid rgba(255, 255, 255, 0.2)' }}>
                                 <th style={{ padding: '12px', textAlign: 'left' }}>Name</th>
                                 <th style={{ padding: '12px', textAlign: 'left' }}>Category</th>
-                                <th style={{ padding: '12px', textAlign: 'right' }}>Cost</th>
+                                <th style={{ padding: '12px', textAlign: 'right' }}>Price</th>
+                                <th style={{ padding: '12px', textAlign: 'right' }}>Total Spent</th>
                                 <th style={{ padding: '12px', textAlign: 'left' }}>Billing Cycle</th>
-                                <th style={{ padding: '12px', textAlign: 'left' }}>Start Date</th>
                                 <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
                                 <th style={{ padding: '12px', textAlign: 'left' }}>Created</th>
                             </tr>
@@ -246,19 +241,19 @@ const fetchSubscriptions = useCallback(async () => {
                                 >
                                     <td style={{ padding: '12px' }}>{sub.name}</td>
                                     <td style={{ padding: '12px' }}>{sub.category || 'N/A'}</td>
-                                    <td style={{ padding: '12px', textAlign: 'right' }}>₹{sub.cost}</td>
+                                    <td style={{ padding: '12px', textAlign: 'right' }}>₹{sub.price}</td>
+                                    <td style={{ padding: '12px', textAlign: 'right' }}>₹{sub.totalAmountSpent}</td>
                                     <td style={{ padding: '12px' }}>{sub.billingCycle}</td>
-                                    <td style={{ padding: '12px' }}>{new Date(sub.startDate).toLocaleDateString()}</td>
                                     <td style={{ padding: '12px' }}>
                                         <span style={{
                                             padding: '4px 12px',
                                             borderRadius: '12px',
                                             fontSize: '12px',
                                             fontWeight: 'bold',
-                                            backgroundColor: sub.status === 'Expired' ? 'rgba(255, 152, 0, 0.2)' : 'rgba(244, 67, 54, 0.2)',
-                                            color: sub.status === 'Expired' ? '#ff9800' : '#f44336'
+                                            backgroundColor: 'rgba(255, 152, 0, 0.2)',
+                                            color: '#ff9800'
                                         }}>
-                                            {sub.status}
+                                            {sub.calculatedStatus}
                                         </span>
                                     </td>
                                     <td style={{ padding: '12px' }}>{new Date(sub.createdAt || sub.startDate).toLocaleDateString()}</td>
@@ -277,7 +272,7 @@ const fetchSubscriptions = useCallback(async () => {
                     }}>
                         <h3 style={{ marginBottom: '10px' }}>No report data</h3>
                         <p>
-                            No expired or cancelled subscriptions found.
+                            No subscriptions found.
                             {startDate && endDate && ' Try adjusting the date range.'}
                         </p>
                     </div>

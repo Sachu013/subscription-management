@@ -103,7 +103,7 @@ const Analytics = () => {
             {/* Metrics Cards */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
                 gap: '20px',
                 marginBottom: '30px'
             }}>
@@ -115,8 +115,8 @@ const Analytics = () => {
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     textAlign: 'center'
                 }}>
-                    <h3 style={{ fontSize: '16px', marginBottom: '10px', color: 'rgba(255, 255, 255, 0.8)' }}>Active Subscriptions</h3>
-                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#667eea' }}>{metrics?.activeCount || 0}</p>
+                    <h3 style={{ fontSize: '16px', marginBottom: '10px', color: 'rgba(255, 255, 255, 0.8)' }}>All Time Spent</h3>
+                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#667eea' }}>₹{metrics?.allTimeTotal || 0}</p>
                 </div>
                 <div style={{
                     background: 'rgba(255, 255, 255, 0.1)',
@@ -126,7 +126,7 @@ const Analytics = () => {
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     textAlign: 'center'
                 }}>
-                    <h3 style={{ fontSize: '16px', marginBottom: '10px', color: 'rgba(255, 255, 255, 0.8)' }}>Monthly Spending</h3>
+                    <h3 style={{ fontSize: '16px', marginBottom: '10px', color: 'rgba(255, 255, 255, 0.8)' }}>Current Month Spending</h3>
                     <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#43e97b' }}>₹{metrics?.monthlyTotal || 0}</p>
                 </div>
                 <div style={{
@@ -137,8 +137,8 @@ const Analytics = () => {
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     textAlign: 'center'
                 }}>
-                    <h3 style={{ fontSize: '16px', marginBottom: '10px', color: 'rgba(255, 255, 255, 0.8)' }}>Yearly Spending</h3>
-                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#fa709a' }}>₹{metrics?.yearlyTotal || 0}</p>
+                    <h3 style={{ fontSize: '16px', marginBottom: '10px', color: 'rgba(255, 255, 255, 0.8)' }}>Active Subscriptions</h3>
+                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#fa709a' }}>{metrics?.activeCount || 0}</p>
                 </div>
             </div>
 
@@ -353,8 +353,8 @@ const Analytics = () => {
                                         <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>{sub.category}</p>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
-                                        <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#43e97b', margin: 0 }}>₹{sub.monthlyCost}</p>
-                                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>/month</p>
+                                        <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#43e97b', margin: 0 }}>₹{sub.totalAmountSpent}</p>
+                                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Total Spent</p>
                                     </div>
                                 </div>
                             ))}

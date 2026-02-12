@@ -4,33 +4,28 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
     const [formData, setFormData] = useState({
         name: '',
         category: 'Other',
-        cost: '',
+        price: '',
         currency: 'INR',
         startDate: '',
-        billingCycle: 'Monthly',
-        nextBillingDate: '',
-        endDate: '',
-        reminderEnabled: false,
-        reminderDays: 7
+        billingCycle: 'monthly',
+        isActive: true
     });
 
     useEffect(() => {
         if (isEditMode && initialData) {
             // Format dates to YYYY-MM-DD for input fields if they exist
             const formattedStart = initialData.startDate ? new Date(initialData.startDate).toISOString().split('T')[0] : '';
-            const formattedNext = initialData.nextBillingDate ? new Date(initialData.nextBillingDate).toISOString().split('T')[0] : '';
-            const formattedEnd = initialData.endDate ? new Date(initialData.endDate).toISOString().split('T')[0] : '';
 
             setFormData({
                 ...initialData,
                 startDate: formattedStart,
-                nextBillingDate: formattedNext,
-                endDate: formattedEnd || ''
+                price: initialData.price || '',
+                billingCycle: initialData.billingCycle ? initialData.billingCycle.toLowerCase() : 'monthly'
             });
         }
     }, [initialData, isEditMode]);
 
-    const { name, category, cost, startDate, billingCycle, nextBillingDate, endDate, reminderEnabled, reminderDays } = formData;
+    const { name, category, price, startDate, billingCycle } = formData;
 
     const onChange = (e) => {
         const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -42,7 +37,10 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
 
     const onSubmit = (e) => {
         e.preventDefault();
-        onFormSubmit(formData);
+        onFormSubmit({
+            ...formData,
+            price: Number(formData.price)
+        });
     };
 
     return (
@@ -83,8 +81,8 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
                         </select>
                     </div>
                     <div className="form-group">
-                        <label>Cost (₹)</label>
-                        <input type="number" name="cost" value={cost} onChange={onChange} required />
+                        <label>Price (₹)</label>
+                        <input type="number" name="price" value={price} onChange={onChange} required />
                     </div>
                 </div>
 
@@ -94,47 +92,13 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
                         <input type="date" name="startDate" value={startDate} onChange={onChange} required />
                     </div>
                     <div className="form-group">
-                        <label>End Date (Optional)</label>
-                        <input type="date" name="endDate" value={endDate} onChange={onChange} />
-                    </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                    <div className="form-group">
                         <label>Billing Cycle</label>
                         <select name="billingCycle" value={billingCycle} onChange={onChange}>
-                            <option value="Monthly">Monthly</option>
-                            <option value="Yearly">Yearly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
                         </select>
                     </div>
-                    <div className="form-group">
-                        <label>Next Billing Date</label>
-                        <input type="date" name="nextBillingDate" value={nextBillingDate} onChange={onChange} required />
-                    </div>
                 </div>
-
-                <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <input
-                        type="checkbox"
-                        name="reminderEnabled"
-                        checked={reminderEnabled}
-                        onChange={onChange}
-                        id="reminderToggle"
-                        style={{ width: 'auto', margin: 0 }}
-                    />
-                    <label htmlFor="reminderToggle" style={{ margin: 0, cursor: 'pointer' }}>Enable Renewal Reminder</label>
-                </div>
-
-                {reminderEnabled && (
-                    <div className="form-group">
-                        <label>Remind Me</label>
-                        <select name="reminderDays" value={reminderDays} onChange={onChange}>
-                            <option value="3">3 days before</option>
-                            <option value="7">7 days before</option>
-                            <option value="14">14 days before</option>
-                        </select>
-                    </div>
-                )}
 
                 <div className="form-group" style={{ marginTop: '20px' }}>
                     <button type="submit" className="btn btn-block">{isEditMode ? 'Update' : 'Add'} Subscription</button>

@@ -2,7 +2,8 @@ const Subscription = require('../models/subscriptionModel');
 const {
     getSubscriptionStatus,
     isActiveInMonth,
-    getNormalizedMonthlyCost
+    getNormalizedMonthlyCost,
+    getTotalAmountSpent
 } = require('../utils/subscriptionUtils');
 
 // ==================== ANALYTICS ENDPOINTS ====================
@@ -22,13 +23,15 @@ const getAnalyticsSummary = async (req, res) => {
         let activeCount = 0;
         let expiredCount = 0;
         let upcomingCount = 0;
-        let monthlyTotal = 0;
-        let upcomingDueSoonCount = 0;
+        let monthStartTotal = 0;
+        let allTimeTotal = 0;
 
         subscriptions.forEach(sub => {
             const computedStatus = getSubscriptionStatus(sub);
+            const totalSpent = getTotalAmountSpent(sub);
 
-            // 1. Mandatory Counts
+            allTimeTotal += totalSpent;
+
             if (computedStatus === 'ACTIVE') {
                 activeCount++;
             } else if (computedStatus === 'EXPIRED') {
@@ -37,22 +40,14 @@ const getAnalyticsSummary = async (req, res) => {
                 upcomingCount++;
             }
 
-            // 2. Upcoming Due Soon (nextBillingDate within next 7 days AND still Active)
-            if (computedStatus === 'ACTIVE' && sub.nextBillingDate) {
-                const nextBilling = new Date(sub.nextBillingDate);
-                nextBilling.setHours(0, 0, 0, 0);
-                const diffTime = nextBilling - now;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (diffDays >= 0 && diffDays <= 7) {
-                    upcomingDueSoonCount++;
-                }
-            }
-
-            // 3. Monthly Spending (Current Month Only)
-            // Rule: Include if Active in current month OR nextBillingDate falls in current month
-            if (isActiveInMonth(sub, currentMonth, currentYear)) {
-                monthlyTotal += getNormalizedMonthlyCost(sub);
+            // Monthly Spending: Sum of payments made IN this specific month
+            if (sub.payments) {
+                sub.payments.forEach(p => {
+                    const pDate = new Date(p.paidOn);
+                    if (pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear) {
+                        monthStartTotal += (p.amount || 0);
+                    }
+                });
             }
         });
 
@@ -60,10 +55,9 @@ const getAnalyticsSummary = async (req, res) => {
             activeCount,
             expiredCount,
             upcomingCount,
-            upcomingDueSoonCount,
             totalCount: subscriptions.length,
-            monthlyTotal: parseFloat(monthlyTotal.toFixed(2)),
-            yearlyTotal: parseFloat((monthlyTotal * 12).toFixed(2))
+            monthlyTotal: parseFloat(monthStartTotal.toFixed(2)),
+            allTimeTotal: parseFloat(allTimeTotal.toFixed(2))
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -94,14 +88,28 @@ const getCategoryBreakdown = async (req, res) => {
 
         filteredSubscriptions.forEach(sub => {
             const category = sub.category || 'Other';
-            const normalizedCost = getNormalizedMonthlyCost(sub);
+            // Cost depends on filter. For all_time, it's total spending. 
+            // For current_month, it's payments IN that month.
+            let costToAdd = 0;
+            if (filter === 'current_month') {
+                if (sub.payments) {
+                    sub.payments.forEach(p => {
+                        const pDate = new Date(p.paidOn);
+                        if (pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear) {
+                            costToAdd += (p.amount || 0);
+                        }
+                    });
+                }
+            } else {
+                costToAdd = getTotalAmountSpent(sub);
+            }
 
             if (categoryMap[category]) {
-                categoryMap[category].total += normalizedCost;
+                categoryMap[category].total += costToAdd;
                 categoryMap[category].count += 1;
             } else {
                 categoryMap[category] = {
-                    total: normalizedCost,
+                    total: costToAdd,
                     count: 1
                 };
             }
@@ -136,8 +144,13 @@ const getMonthlyTrend = async (req, res) => {
 
             let monthlyTotal = 0;
             subscriptions.forEach(sub => {
-                if (isActiveInMonth(sub, month, year)) {
-                    monthlyTotal += getNormalizedMonthlyCost(sub);
+                if (sub.payments) {
+                    sub.payments.forEach(p => {
+                        const pDate = new Date(p.paidOn);
+                        if (pDate.getMonth() === month && pDate.getFullYear() === year) {
+                            monthlyTotal += (p.amount || 0);
+                        }
+                    });
                 }
             });
 
@@ -170,19 +183,19 @@ const getTopSubscriptions = async (req, res) => {
             filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'EXPIRED');
         }
 
-        const subscriptionsWithMonthlyCost = filteredSubscriptions.map(sub => {
+        const subscriptionsWithTotalCost = filteredSubscriptions.map(sub => {
             return {
                 _id: sub._id,
                 name: sub.name,
                 category: sub.category,
-                cost: sub.cost,
+                price: sub.price,
                 billingCycle: sub.billingCycle,
-                monthlyCost: parseFloat(getNormalizedMonthlyCost(sub).toFixed(2))
+                totalSpent: parseFloat(getTotalAmountSpent(sub).toFixed(2))
             };
         });
 
-        const topSubscriptions = subscriptionsWithMonthlyCost
-            .sort((a, b) => b.monthlyCost - a.monthlyCost)
+        const topSubscriptions = subscriptionsWithTotalCost
+            .sort((a, b) => b.totalSpent - a.totalSpent)
             .slice(0, limit);
 
         res.status(200).json(topSubscriptions);
@@ -209,12 +222,13 @@ const getCategoryComparison = async (req, res) => {
             return {
                 _id: sub._id,
                 name: sub.name,
-                cost: sub.cost,
+                price: sub.price,
                 billingCycle: sub.billingCycle,
                 monthlyCost: parseFloat(getNormalizedMonthlyCost(sub).toFixed(2)),
+                totalSpent: parseFloat(getTotalAmountSpent(sub).toFixed(2)),
                 startDate: sub.startDate
             };
-        }).sort((a, b) => b.monthlyCost - a.monthlyCost);
+        }).sort((a, b) => b.totalSpent - a.totalSpent);
 
         res.status(200).json(comparisonData);
     } catch (error) {

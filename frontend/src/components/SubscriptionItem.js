@@ -1,20 +1,9 @@
 import React from 'react';
 import { FaBell } from 'react-icons/fa';
 
-const SubscriptionItem = ({ subscription, onDelete, onEdit }) => {
-    // Calculate if subscription is expiring soon
-    const isExpiringSoon = () => {
-        if (!subscription.reminderEnabled || !subscription.nextBillingDate) return false;
-
-        const today = new Date();
-        const nextBilling = new Date(subscription.nextBillingDate);
-        const daysUntilRenewal = Math.ceil((nextBilling - today) / (1000 * 60 * 60 * 24));
-
-        return daysUntilRenewal <= subscription.reminderDays && daysUntilRenewal >= 0;
-    };
-
+const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay }) => {
     const getLifecycleStatus = () => {
-        const status = subscription.computedStatus;
+        const status = subscription.calculatedStatus;
 
         if (status === 'UPCOMING') {
             return { label: 'Upcoming', color: '#ffc107', icon: '🟡' };
@@ -24,74 +13,64 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit }) => {
             return { label: 'Expired', color: '#ff4d4d', icon: '🔴' };
         }
 
-        // Default to ACTIVE
         return { label: 'Active', color: '#43e97b', icon: '🟢' };
     };
 
     const lifecycle = getLifecycleStatus();
-    const getDaysUntilRenewal = () => {
-        if (!subscription.nextBillingDate) return null;
-        const today = new Date();
-        const nextBilling = new Date(subscription.nextBillingDate);
-        return Math.ceil((nextBilling - today) / (1000 * 60 * 60 * 24));
-    };
-
-    const expiring = isExpiringSoon();
-    const daysLeft = getDaysUntilRenewal();
 
     return (
         <div className="subscription-item" style={{
             position: 'relative',
-            border: expiring ? '2px solid #ff9800' : '1px solid rgba(255, 255, 255, 0.2)'
+            border: `1px solid rgba(255, 255, 255, 0.2)`
         }}>
-            {expiring && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                <h3>{subscription.name}</h3>
                 <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '10px',
-                    background: '#ff9800',
-                    color: '#fff',
-                    padding: '5px 10px',
-                    borderRadius: '15px',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '5px'
+                    gap: '5px',
+                    padding: '2px 10px',
+                    borderRadius: '10px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: `1px solid ${lifecycle.color}`,
                 }}>
-                    <FaBell />
-                    {daysLeft === 0 ? 'Due Today!' : `${daysLeft} day${daysLeft > 1 ? 's' : ''} left`}
+                    <span style={{ fontSize: '10px' }}>{lifecycle.icon}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 'bold', color: lifecycle.color }}>{lifecycle.label}</span>
                 </div>
-            )}
-            <h3>{subscription.name}</h3>
-            <p>Category: {subscription.category || 'N/A'}</p>
-            <p>Cost: ₹{subscription.cost}</p>
-            <p>Billing Cycle: {subscription.billingCycle}</p>
-            <p>Next Due: {new Date(subscription.nextBillingDate).toLocaleDateString()}</p>
-            {subscription.endDate && (
-                <p style={{ color: '#ff6b6b' }}>Ends on: {new Date(subscription.endDate).toLocaleDateString()}</p>
-            )}
-            {subscription.reminderEnabled && (
-                <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>
-                    🔔 Reminder: {subscription.reminderDays} days before
-                </p>
-            )}
-            <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '4px 12px',
-                borderRadius: '12px',
-                background: 'rgba(255,255,255,0.1)',
-                border: `1px solid ${lifecycle.color}`,
-                margin: '10px 0'
-            }}>
-                <span style={{ fontSize: '10px' }}>{lifecycle.icon}</span>
-                <span style={{ fontSize: '12px', fontWeight: 'bold', color: lifecycle.color }}>{lifecycle.label}</span>
             </div>
-            <div style={{ marginTop: '10px' }}>
-                <button onClick={() => onEdit(subscription)} style={{ marginRight: '10px' }}>Edit</button>
-                <button onClick={() => onDelete(subscription._id)} style={{ backgroundColor: '#ff4d4d', color: 'white' }}>Delete</button>
+
+            <p style={{ margin: '5px 0' }}>Category: {subscription.category || 'N/A'}</p>
+            <p style={{ fontSize: '18px', fontWeight: 'bold', margin: '10px 0', color: '#43e97b' }}>
+                ₹{subscription.price} <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', fontWeight: 'normal' }}>/ {subscription.billingCycle}</span>
+            </p>
+
+            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '8px', margin: '10px 0' }}>
+                <p style={{ fontSize: '13px', margin: '0' }}>Total Spent: <strong>₹{subscription.totalAmountSpent || 0}</strong></p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: '5px 0 0 0' }}>
+                    Last Payment: {subscription.payments && subscription.payments.length > 0
+                        ? new Date(subscription.payments.sort((a, b) => new Date(b.paidOn) - new Date(a.paidOn))[0].paidOn).toLocaleDateString()
+                        : 'None'}
+                </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                <button
+                    onClick={() => onPay(subscription._id)}
+                    style={{
+                        flex: 1,
+                        background: 'linear-gradient(135deg, #43e97b 0%, #38ef7d 100%)',
+                        color: '#000',
+                        border: 'none',
+                        padding: '8px',
+                        borderRadius: '6px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                    }}
+                >
+                    Pay Now
+                </button>
+                <button onClick={() => onEdit(subscription)} style={{ padding: '8px 12px' }}>Edit</button>
+                <button onClick={() => onDelete(subscription._id)} style={{ backgroundColor: '#ff4d4d', color: 'white', padding: '8px 12px' }}>Delete</button>
             </div>
         </div>
     );

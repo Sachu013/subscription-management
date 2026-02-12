@@ -15,9 +15,9 @@ const subscriptionSchema = mongoose.Schema(
             type: String,
             required: false,
         },
-        cost: {
+        price: {
             type: Number,
-            required: [true, 'Please add the cost'],
+            required: [true, 'Please add the price'],
         },
         currency: {
             type: String,
@@ -28,17 +28,25 @@ const subscriptionSchema = mongoose.Schema(
             required: [true, 'Please add a start date'],
         },
         billingCycle: {
-            type: String, // e.g., 'Monthly', 'Yearly'
+            type: String, // 'monthly', 'yearly'
             required: [true, 'Please add a billing cycle'],
         },
-        nextBillingDate: {
-            type: Date,
-            required: [true, 'Please add the next billing date'],
+        isActive: {
+            type: Boolean,
+            default: true,
         },
-        endDate: {
-            type: Date,
-            required: false,
-        },
+        payments: [
+            {
+                paidOn: {
+                    type: Date,
+                    required: true,
+                },
+                amount: {
+                    type: Number,
+                    required: true,
+                },
+            }
+        ],
     },
     {
         timestamps: true,

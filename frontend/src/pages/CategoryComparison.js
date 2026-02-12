@@ -138,7 +138,7 @@ const CategoryComparison = () => {
                                 marginBottom: '30px'
                             }}>
                                 <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', fontSize: '20px' }}>
-                                    <FaChartBar /> {selectedCategory} - Monthly Cost Comparison
+                                    <FaChartBar /> {selectedCategory} - Monthly Equivalent Comparison
                                 </h2>
                                 <ResponsiveContainer width="100%" height={400}>
                                     <BarChart data={comparisonData}>
@@ -153,7 +153,7 @@ const CategoryComparison = () => {
                                             }}
                                         />
                                         <Legend />
-                                        <Bar dataKey="monthlyCost" fill="#667eea" name="Monthly Cost (₹)" />
+                                        <Bar dataKey="monthlyCost" fill="#667eea" name="Monthly Equivalent (₹)" />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
@@ -174,8 +174,8 @@ const CategoryComparison = () => {
                                                 <th style={{ padding: '12px', textAlign: 'left', color: 'rgba(255,255,255,0.8)' }}>Rank</th>
                                                 <th style={{ padding: '12px', textAlign: 'left', color: 'rgba(255,255,255,0.8)' }}>Subscription</th>
                                                 <th style={{ padding: '12px', textAlign: 'left', color: 'rgba(255,255,255,0.8)' }}>Billing Cycle</th>
-                                                <th style={{ padding: '12px', textAlign: 'right', color: 'rgba(255,255,255,0.8)' }}>Actual Cost</th>
-                                                <th style={{ padding: '12px', textAlign: 'right', color: 'rgba(255,255,255,0.8)' }}>Monthly Cost</th>
+                                                <th style={{ padding: '12px', textAlign: 'right', color: 'rgba(255,255,255,0.8)' }}>Price</th>
+                                                <th style={{ padding: '12px', textAlign: 'right', color: 'rgba(255,255,255,0.8)' }}>Monthly Equivalent</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -198,7 +198,7 @@ const CategoryComparison = () => {
                                                     </td>
                                                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{sub.name}</td>
                                                     <td style={{ padding: '12px', color: 'rgba(255,255,255,0.7)' }}>{sub.billingCycle}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right', color: 'rgba(255,255,255,0.7)' }}>₹{sub.cost}</td>
+                                                    <td style={{ padding: '12px', textAlign: 'right', color: 'rgba(255,255,255,0.7)' }}>₹{sub.price}</td>
                                                     <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold', color: '#43e97b' }}>₹{sub.monthlyCost}</td>
                                                 </tr>
                                             ))}
