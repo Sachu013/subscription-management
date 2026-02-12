@@ -217,8 +217,8 @@ const Analytics = () => {
                             <FaChartPie /> Category-wise Spending
                         </h2>
                         <select
-                            value={categoryFilter}
-                            onChange={(e) => setCategoryFilter(e.target.value)}
+                            value={breakdownFilter}
+                            onChange={(e) => setBreakdownFilter(e.target.value)}
                             style={{
                                 background: 'rgba(255,255,255,0.1)',
                                 border: '1px solid rgba(255,255,255,0.2)',
