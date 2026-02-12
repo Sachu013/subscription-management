@@ -65,6 +65,11 @@ const createSubscription = async (req, res) => {
 // @access  Private
 const getSubscriptionById = async (req, res) => {
     try {
+        // Guard against legacy calls to deprecated endpoint names
+        if (req.params.id === 'upcoming-payments') {
+            return res.status(404).json({ message: 'Endpoint deprecated. Calculate upcoming payments on frontend.' });
+        }
+
         const subscription = await Subscription.findById(req.params.id);
 
         if (!subscription) {
