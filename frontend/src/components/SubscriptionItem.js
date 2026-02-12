@@ -14,6 +14,10 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit }) => {
     };
 
     const getLifecycleStatus = () => {
+        // 0. Respect manual status field first
+        if (subscription.status === 'Cancelled') return { label: 'Cancelled', color: '#ff4d4d', icon: '🔴' };
+        if (subscription.status === 'Expired') return { label: 'Expired', color: '#ff4d4d', icon: '🔴' };
+
         const now = new Date();
         now.setHours(0, 0, 0, 0);
 
@@ -23,7 +27,7 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit }) => {
         // 1. Upcoming (not started)
         if (now < startDate) return { label: 'Upcoming', color: '#ffc107', icon: '🟡' };
 
-        // 2. Expired
+        // 2. Expired (by date)
         if (subscription.endDate) {
             const endDate = new Date(subscription.endDate);
             endDate.setHours(0, 0, 0, 0);
@@ -81,6 +85,9 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit }) => {
             <p>Cost: ₹{subscription.cost}</p>
             <p>Billing Cycle: {subscription.billingCycle}</p>
             <p>Next Due: {new Date(subscription.nextBillingDate).toLocaleDateString()}</p>
+            {subscription.endDate && (
+                <p style={{ color: '#ff6b6b' }}>Ends on: {new Date(subscription.endDate).toLocaleDateString()}</p>
+            )}
             {subscription.reminderEnabled && (
                 <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>
                     🔔 Reminder: {subscription.reminderDays} days before
@@ -97,7 +104,7 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit }) => {
                 margin: '10px 0'
             }}>
                 <span style={{ fontSize: '10px' }}>{lifecycle.icon}</span>
-                <span style={{ fontSize: '12px', fontWeight: 'bold', color: lifecycle.color }}>{lifecycle.label}</span>
+                <span style={{ fontSize: '12px', fontWeight: 'bold', color: lifecycle.color }}>{lifecycle.label} ({subscription.status})</span>
             </div>
             <div style={{ marginTop: '10px' }}>
                 <button onClick={() => onEdit(subscription)} style={{ marginRight: '10px' }}>Edit</button>

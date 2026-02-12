@@ -8,18 +8,23 @@ const Subscription = require('../models/subscriptionModel');
  * @returns {string} - 'active', 'expired', or 'upcoming'
  */
 const getSubscriptionStatus = (subscription) => {
+    // 1. Respect manual status field first
+    if (subscription.status === 'Cancelled' || subscription.status === 'Expired') {
+        return subscription.status.toLowerCase();
+    }
+
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
     const startDate = new Date(subscription.startDate);
     startDate.setHours(0, 0, 0, 0);
 
-    // Check if upcoming (not yet started)
+    // 2. Check if upcoming (not yet started)
     if (now < startDate) {
         return 'upcoming';
     }
 
-    // Check if expired
+    // 3. Check if date-expired
     if (subscription.endDate) {
         const endDate = new Date(subscription.endDate);
         endDate.setHours(0, 0, 0, 0);
@@ -41,6 +46,10 @@ const getSubscriptionStatus = (subscription) => {
  * @returns {boolean} - True if active in the month
  */
 const isActiveInMonth = (subscription, month, year) => {
+    // If manually cancelled/expired, treat as inactive unless we are looking at past data
+    // However, for consistency with 'activeCount', let's stick to the status rules
+
+    // For spending, it's safer to check if the subscription existed in that month
     const monthStart = new Date(year, month, 1);
     monthStart.setHours(0, 0, 0, 0);
 
@@ -48,24 +57,32 @@ const isActiveInMonth = (subscription, month, year) => {
     monthEnd.setHours(23, 59, 59, 999);
 
     const startDate = new Date(subscription.startDate);
-    if (isNaN(startDate.getTime())) return false; // Invalid start date
+    if (isNaN(startDate.getTime())) return false;
     startDate.setHours(0, 0, 0, 0);
 
     let endDate = null;
     if (subscription.endDate) {
         endDate = new Date(subscription.endDate);
         if (isNaN(endDate.getTime())) {
-            endDate = null; // Treat invalid end date as ongoing
+            endDate = null;
         } else {
             endDate.setHours(23, 59, 59, 999);
         }
     }
 
-    // Subscription must start before or during the month
+    // Basic date check
     if (startDate > monthEnd) return false;
-
-    // Subscription must not have ended before the month
     if (endDate && endDate < monthStart) return false;
+
+    // Additionally, respect manual status for CURRENT and FUTURE months
+    const today = new Date();
+    const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    if (monthStart >= currentMonthStart) {
+        if (subscription.status === 'Cancelled' || subscription.status === 'Expired') {
+            return false;
+        }
+    }
 
     return true;
 };

@@ -25,6 +25,7 @@ const createSubscription = async (req, res) => {
         startDate,
         billingCycle,
         nextBillingDate,
+        endDate,
         status,
     } = req.body;
 
@@ -42,6 +43,7 @@ const createSubscription = async (req, res) => {
             startDate,
             billingCycle,
             nextBillingDate,
+            endDate,
             status,
         });
 
