@@ -1,6 +1,23 @@
 const Subscription = require('../models/subscriptionModel');
 const User = require('../models/userModel');
-const { getSubscriptionStatus, getTotalAmountSpent, getNextRenewalDate } = require('../utils/subscriptionUtils');
+const {
+    getSubscriptionStatus,
+    getTotalAmountSpent,
+    getLastPaymentDate,
+    getNextDueDate
+} = require('../utils/subscriptionUtils');
+
+// Helper to format subscription response
+const formatSubscription = (sub) => {
+    const subObj = sub.toObject ? sub.toObject() : sub;
+    return {
+        ...subObj,
+        status: getSubscriptionStatus(subObj),
+        totalSpent: getTotalAmountSpent(subObj),
+        lastPayment: getLastPaymentDate(subObj),
+        nextRenewalDate: getNextDueDate(subObj)
+    };
+};
 
 // @desc    Get subscriptions
 // @route   GET /api/subscriptions
@@ -8,18 +25,8 @@ const { getSubscriptionStatus, getTotalAmountSpent, getNextRenewalDate } = requi
 const getSubscriptions = async (req, res) => {
     try {
         const subscriptions = await Subscription.find({ user: req.user.id });
-
-        const subscriptionsWithMetadata = subscriptions.map(sub => {
-            const subObj = sub.toObject();
-            return {
-                ...subObj,
-                calculatedStatus: getSubscriptionStatus(subObj),
-                totalAmountSpent: getTotalAmountSpent(subObj),
-                nextRenewalDate: getNextRenewalDate(subObj)
-            };
-        });
-
-        res.status(200).json(subscriptionsWithMetadata);
+        const formatted = subscriptions.map(formatSubscription);
+        res.status(200).json(formatted);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -33,7 +40,6 @@ const createSubscription = async (req, res) => {
         name,
         category,
         price,
-        currency,
         startDate,
         billingCycle,
     } = req.body;
@@ -48,13 +54,12 @@ const createSubscription = async (req, res) => {
             name,
             category,
             price,
-            currency,
             startDate,
             billingCycle,
-            payments: [], // Start with no payments
+            payments: [],
         });
 
-        res.status(201).json(subscription);
+        res.status(201).json(formatSubscription(subscription));
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -81,15 +86,7 @@ const getSubscriptionById = async (req, res) => {
             return res.status(401).json({ message: 'User not authorized' });
         }
 
-        const subObj = subscription.toObject();
-        const response = {
-            ...subObj,
-            calculatedStatus: getSubscriptionStatus(subObj),
-            totalAmountSpent: getTotalAmountSpent(subObj),
-            nextRenewalDate: getNextRenewalDate(subObj)
-        };
-
-        res.status(200).json(response);
+        res.status(200).json(formatSubscription(subscription));
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -124,7 +121,7 @@ const updateSubscription = async (req, res) => {
             }
         );
 
-        res.status(200).json(updatedSubscription);
+        res.status(200).json(formatSubscription(updatedSubscription));
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -174,21 +171,17 @@ const paySubscription = async (req, res) => {
             return res.status(401).json({ message: 'User not authorized' });
         }
 
-        const newPayment = {
-            paidOn: new Date(),
-            amount: subscription.price
-        };
+        // Use manual date or today
+        const paidOn = req.body.paidOn ? new Date(req.body.paidOn) : new Date();
+        const amount = req.body.amount || subscription.price;
 
-        subscription.payments.push(newPayment);
-        await subscription.save();
-
-        const subObj = subscription.toObject();
-        res.status(200).json({
-            ...subObj,
-            calculatedStatus: getSubscriptionStatus(subObj),
-            totalAmountSpent: getTotalAmountSpent(subObj),
-            nextRenewalDate: getNextRenewalDate(subObj)
+        subscription.payments.push({
+            paidOn,
+            amount
         });
+
+        await subscription.save();
+        res.status(200).json(formatSubscription(subscription));
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

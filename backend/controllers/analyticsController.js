@@ -15,37 +15,32 @@ const getAnalyticsSummary = async (req, res) => {
     try {
         const subscriptions = await Subscription.find({ user: req.user.id });
         const now = new Date();
-        now.setHours(0, 0, 0, 0);
-
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
 
         let activeCount = 0;
         let expiredCount = 0;
         let upcomingCount = 0;
-        let monthStartTotal = 0;
+        let monthlyTotal = 0;
         let allTimeTotal = 0;
 
         subscriptions.forEach(sub => {
-            const computedStatus = getSubscriptionStatus(sub);
-            const totalSpent = getTotalAmountSpent(sub);
+            const subObj = sub.toObject();
+            const status = getSubscriptionStatus(subObj);
+            const totalSpent = getTotalAmountSpent(subObj);
 
             allTimeTotal += totalSpent;
 
-            if (computedStatus === 'ACTIVE') {
-                activeCount++;
-            } else if (computedStatus === 'EXPIRED') {
-                expiredCount++;
-            } else if (computedStatus === 'UPCOMING') {
-                upcomingCount++;
-            }
+            if (status === 'Active') activeCount++;
+            else if (status === 'Expired') expiredCount++;
+            else if (status === 'Upcoming') upcomingCount++;
 
-            // Monthly Spending: Sum of payments made IN this specific month
+            // Sum payments in current month
             if (sub.payments) {
                 sub.payments.forEach(p => {
                     const pDate = new Date(p.paidOn);
                     if (pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear) {
-                        monthStartTotal += (p.amount || 0);
+                        monthlyTotal += p.amount;
                     }
                 });
             }
@@ -56,7 +51,7 @@ const getAnalyticsSummary = async (req, res) => {
             expiredCount,
             upcomingCount,
             totalCount: subscriptions.length,
-            monthlyTotal: parseFloat(monthStartTotal.toFixed(2)),
+            monthlyTotal: parseFloat(monthlyTotal.toFixed(2)),
             allTimeTotal: parseFloat(allTimeTotal.toFixed(2))
         });
     } catch (error) {
@@ -79,7 +74,7 @@ const getCategoryBreakdown = async (req, res) => {
         let filteredSubscriptions = subscriptions;
 
         if (filter === 'active_only') {
-            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'ACTIVE');
+            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'Active');
         } else if (filter === 'current_month') {
             filteredSubscriptions = subscriptions.filter(sub => isActiveInMonth(sub, currentMonth, currentYear));
         }
@@ -178,9 +173,9 @@ const getTopSubscriptions = async (req, res) => {
 
         let filteredSubscriptions = subscriptions;
         if (filter === 'activeOnly') {
-            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'ACTIVE');
+            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'Active');
         } else if (filter === 'expiredOnly') {
-            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'EXPIRED');
+            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'Expired');
         }
 
         const subscriptionsWithTotalCost = filteredSubscriptions.map(sub => {
@@ -216,7 +211,7 @@ const getCategoryComparison = async (req, res) => {
         });
 
         // Use dynamic active status
-        const activeSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'ACTIVE');
+        const activeSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'Active');
 
         const comparisonData = activeSubscriptions.map(sub => {
             return {

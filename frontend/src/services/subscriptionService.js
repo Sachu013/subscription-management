@@ -50,15 +50,15 @@ const updateSubscription = async (subscriptionId, subscriptionData, token) => {
     return response.data;
 };
 
-// Pay for a subscription
-const paySubscription = async (subscriptionId, token) => {
+// Pay for a subscription (add payment)
+const paySubscription = async (subscriptionId, token, paymentData = {}) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     };
 
-    const response = await http.post(`${API_URL}${subscriptionId}/pay`, {}, config);
+    const response = await http.post(`${API_URL}${subscriptionId}/pay`, paymentData, config);
     return response.data;
 };
 

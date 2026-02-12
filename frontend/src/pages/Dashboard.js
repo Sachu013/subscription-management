@@ -1,13 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import AuthContext from '../context/AuthContext';
-import subscriptionService from '../services/subscriptionService';
-import analyticsService from '../services/analyticsService';
-import SubscriptionForm from '../components/SubscriptionForm';
-import SubscriptionItem from '../components/SubscriptionItem';
-import Spinner from '../components/Spinner';
-import { toast } from 'react-toastify';
-import { FaPlus, FaFilter, FaSort, FaSearch, FaBell, FaChartLine, FaFileAlt, FaUserCircle, FaCheckCircle, FaWallet } from 'react-icons/fa';
+import AddPaymentModal from '../components/AddPaymentModal';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -19,22 +10,24 @@ const Dashboard = () => {
         activeCount: 0,
         expiredCount: 0,
         upcomingCount: 0,
-        monthlyTotal: 0
+        monthlyTotal: 0,
+        allTimeTotal: 0
     });
     const [isLoading, setIsLoading] = useState(true);
+
+    // Modal States
+    const [showPayModal, setShowPayModal] = useState(false);
+    const [subForPayment, setSubForPayment] = useState(null);
 
     // Controls State
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
-    const [sortBy, setSortBy] = useState('date-asc'); // date-asc, date-desc, cost-asc, cost-desc
+    const [sortBy, setSortBy] = useState('date-asc');
 
     // Edit Mode State
     const [isEditing, setIsEditing] = useState(false);
     const [currentSubscription, setCurrentSubscription] = useState(null);
     const [showForm, setShowForm] = useState(false);
-
-    // Upcoming Payments State
-    const [upcomingPayments, setUpcomingPayments] = useState([]);
 
     useEffect(() => {
         if (!user) {
@@ -46,7 +39,6 @@ const Dashboard = () => {
                     const token = storedUser ? storedUser.token : null;
 
                     if (token) {
-                        // Fetch subscriptions and analytics in parallel
                         const [subs, summary] = await Promise.all([
                             subscriptionService.getSubscriptions(token),
                             analyticsService.getAnalyticsSummary(token)
@@ -71,21 +63,18 @@ const Dashboard = () => {
     useEffect(() => {
         let result = [...subscriptions];
 
-        // Filter by Category
         if (filterCategory !== 'All') {
             result = result.filter(sub =>
                 sub.category && sub.category.toLowerCase() === filterCategory.toLowerCase()
             );
         }
 
-        // Search by Name
         if (searchTerm) {
             result = result.filter(sub =>
                 sub.name.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
 
-        // Sort
         result.sort((a, b) => {
             if (sortBy === 'date-asc') {
                 const dateA = a.nextRenewalDate ? new Date(a.nextRenewalDate) : new Date(8640000000000000);
@@ -104,30 +93,6 @@ const Dashboard = () => {
         });
 
         setFilteredSubscriptions(result);
-
-        // Update Upcoming Payments (within 7 days)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const sevenDaysLater = new Date(today);
-        sevenDaysLater.setDate(today.getDate() + 7);
-
-        const upcoming = result.filter(sub => {
-            if (!sub.nextRenewalDate || sub.calculatedStatus !== 'ACTIVE') return false;
-            const renewalDate = new Date(sub.nextRenewalDate);
-            renewalDate.setHours(0, 0, 0, 0);
-            return renewalDate >= today && renewalDate <= sevenDaysLater;
-        }).map(sub => {
-            const renewalDate = new Date(sub.nextRenewalDate);
-            renewalDate.setHours(0, 0, 0, 0);
-            const diffTime = renewalDate - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return {
-                ...sub,
-                daysUntilRenewal: diffDays
-            };
-        }).sort((a, b) => a.daysUntilRenewal - b.daysUntilRenewal);
-
-        setUpcomingPayments(upcoming);
     }, [subscriptions, searchTerm, filterCategory, sortBy]);
 
 
@@ -136,22 +101,24 @@ const Dashboard = () => {
         navigate('/login');
     };
 
-    const handlePay = async (id) => {
-        setIsLoading(true);
+    const handlePayClick = (subscription) => {
+        setSubForPayment(subscription);
+        setShowPayModal(true);
+    };
+
+    const confirmPayment = async (id, paymentData) => {
         try {
             const storedUser = JSON.parse(localStorage.getItem('user'));
             const token = storedUser.token;
-            const updatedSub = await subscriptionService.paySubscription(id, token);
+            const updatedSub = await subscriptionService.paySubscription(id, token, paymentData);
 
             setSubscriptions(subscriptions.map(sub => (sub._id === id ? updatedSub : sub)));
 
             const summary = await analyticsService.getAnalyticsSummary(token);
             setAnalyticsSummary(summary);
-            toast.success('Payment recorded!');
+            toast.success('Payment added successfully!');
         } catch (error) {
-            toast.error('Error recording payment');
-        } finally {
-            setIsLoading(false);
+            toast.error('Error adding payment');
         }
     };
 
@@ -228,7 +195,6 @@ const Dashboard = () => {
         setShowForm(false);
     }
 
-    // Predefined categories for filter
     const categories = [
         'All',
         'Entertainment',
@@ -503,7 +469,13 @@ const Dashboard = () => {
                     {filteredSubscriptions.length > 0 ? (
                         <div className="subscriptions">
                             {filteredSubscriptions.map((sub) => (
-                                <SubscriptionItem key={sub._id} subscription={sub} onDelete={deleteSubscription} onEdit={startEdit} onPay={handlePay} />
+                                <SubscriptionItem
+                                    key={sub._id}
+                                    subscription={sub}
+                                    onDelete={deleteSubscription}
+                                    onEdit={startEdit}
+                                    onPay={() => handlePayClick(sub)}
+                                />
                             ))}
                         </div>
                     ) : (
@@ -526,6 +498,17 @@ const Dashboard = () => {
                     )}
                 </section>
             </div>
+
+            {showPayModal && subForPayment && (
+                <AddPaymentModal
+                    subscription={subForPayment}
+                    onClose={() => {
+                        setShowPayModal(false);
+                        setSubForPayment(null);
+                    }}
+                    onConfirm={confirmPayment}
+                />
+            )}
         </section>
     );
 };

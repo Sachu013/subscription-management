@@ -2,13 +2,13 @@ import React from 'react';
 
 const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay }) => {
     const getLifecycleStatus = () => {
-        const status = subscription.calculatedStatus;
+        const { status } = subscription;
 
-        if (status === 'UPCOMING') {
+        if (status === 'Upcoming') {
             return { label: 'Upcoming', color: '#ffc107', icon: '🟡' };
         }
 
-        if (status === 'EXPIRED') {
+        if (status === 'Expired') {
             return { label: 'Expired', color: '#ff4d4d', icon: '🔴' };
         }
 
@@ -66,7 +66,7 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay }) => {
                         cursor: 'pointer'
                     }}
                 >
-                    Pay Now
+                    Add Payment
                 </button>
                 <button onClick={() => onEdit(subscription)} style={{ padding: '8px 12px' }}>Edit</button>
                 <button onClick={() => onDelete(subscription._id)} style={{ backgroundColor: '#ff4d4d', color: 'white', padding: '8px 12px' }}>Delete</button>

@@ -38,17 +38,9 @@ const Reports = () => {
         }
     }, []);
 
-
-
-
-
-
-
     const filterSubscriptions = (subs, start, end) => {
-        // Filter for expired subscriptions
-        let filtered = subs.filter(sub =>
-            sub.calculatedStatus === 'EXPIRED'
-        );
+        // Filter for any status or specific logic as needed
+        let filtered = subs;
 
         // Apply date range filter if provided
         if (start && end) {
@@ -98,10 +90,10 @@ const Reports = () => {
                 `"${sub.name}"`,
                 `"${sub.category || 'N/A'}"`,
                 sub.price,
-                sub.totalAmountSpent,
+                sub.totalSpent || 0,
                 sub.billingCycle,
                 new Date(sub.startDate).toLocaleDateString(),
-                sub.calculatedStatus,
+                sub.status,
                 new Date(sub.createdAt || sub.startDate).toLocaleDateString()
             ];
             csvRows.push(row.join(','));
@@ -200,9 +192,15 @@ const Reports = () => {
                     <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#667eea' }}>{filteredReports.length}</p>
                 </div>
                 <div style={{ textAlign: 'center' }}>
+                    <h3 style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '5px' }}>Active</h3>
+                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#43e97b' }}>
+                        {filteredReports.filter(s => s.status === 'Active').length}
+                    </p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
                     <h3 style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '5px' }}>Expired</h3>
                     <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#ff9800' }}>
-                        {filteredReports.filter(s => s.calculatedStatus === 'EXPIRED').length}
+                        {filteredReports.filter(s => s.status === 'Expired').length}
                     </p>
                 </div>
             </div>
@@ -242,7 +240,7 @@ const Reports = () => {
                                     <td style={{ padding: '12px' }}>{sub.name}</td>
                                     <td style={{ padding: '12px' }}>{sub.category || 'N/A'}</td>
                                     <td style={{ padding: '12px', textAlign: 'right' }}>₹{sub.price}</td>
-                                    <td style={{ padding: '12px', textAlign: 'right' }}>₹{sub.totalAmountSpent}</td>
+                                    <td style={{ padding: '12px', textAlign: 'right' }}>₹{sub.totalSpent || 0}</td>
                                     <td style={{ padding: '12px' }}>{sub.billingCycle}</td>
                                     <td style={{ padding: '12px' }}>
                                         <span style={{
@@ -250,10 +248,10 @@ const Reports = () => {
                                             borderRadius: '12px',
                                             fontSize: '12px',
                                             fontWeight: 'bold',
-                                            backgroundColor: 'rgba(255, 152, 0, 0.2)',
-                                            color: '#ff9800'
+                                            backgroundColor: sub.status === 'Active' ? 'rgba(67, 233, 123, 0.2)' : 'rgba(255, 152, 0, 0.2)',
+                                            color: sub.status === 'Active' ? '#43e97b' : '#ff9800'
                                         }}>
-                                            {sub.calculatedStatus}
+                                            {sub.status}
                                         </span>
                                     </td>
                                     <td style={{ padding: '12px' }}>{new Date(sub.createdAt || sub.startDate).toLocaleDateString()}</td>

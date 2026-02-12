@@ -7,20 +7,18 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
         price: '',
         currency: 'INR',
         startDate: '',
-        billingCycle: 'monthly',
-        isActive: true
+        billingCycle: 'Monthly'
     });
 
     useEffect(() => {
         if (isEditMode && initialData) {
-            // Format dates to YYYY-MM-DD for input fields if they exist
             const formattedStart = initialData.startDate ? new Date(initialData.startDate).toISOString().split('T')[0] : '';
 
             setFormData({
                 ...initialData,
                 startDate: formattedStart,
                 price: initialData.price || '',
-                billingCycle: initialData.billingCycle ? initialData.billingCycle.toLowerCase() : 'monthly'
+                billingCycle: initialData.billingCycle || 'Monthly'
             });
         }
     }, [initialData, isEditMode]);
@@ -28,10 +26,9 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
     const { name, category, price, startDate, billingCycle } = formData;
 
     const onChange = (e) => {
-        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
         setFormData((prevState) => ({
             ...prevState,
-            [e.target.name]: value,
+            [e.target.name]: e.target.value,
         }));
     };
 
@@ -94,8 +91,8 @@ const SubscriptionForm = ({ onFormSubmit, initialData = {}, isEditMode = false, 
                     <div className="form-group">
                         <label>Billing Cycle</label>
                         <select name="billingCycle" value={billingCycle} onChange={onChange}>
-                            <option value="monthly">Monthly</option>
-                            <option value="yearly">Yearly</option>
+                            <option value="Monthly">Monthly</option>
+                            <option value="Yearly">Yearly</option>
                         </select>
                     </div>
                 </div>
