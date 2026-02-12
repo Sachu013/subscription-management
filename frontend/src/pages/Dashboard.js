@@ -341,10 +341,10 @@ const Dashboard = () => {
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
                             <FaWallet style={{ fontSize: '32px', color: '#43e97b' }} />
                         </div>
-                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Monthly Cost</h3>
+                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Current Month Spending</h3>
                         <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#43e97b', margin: '0 0 5px 0' }}>₹{analyticsSummary.monthlyTotal}</p>
                         <span style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.6)', fontStyle: 'italic' }}>
-                            Current Month Active Subscriptions Only
+                            Active in Current Month Only
                         </span>
                     </div>
                     <div style={{
@@ -358,18 +358,22 @@ const Dashboard = () => {
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
                             <FaBell style={{ fontSize: '32px', color: '#ff9800' }} />
                         </div>
-                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Upcoming / Expired</h3>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', alignItems: 'center' }}>
-                            <div>
-                                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{analyticsSummary.upcomingCount}</p>
-                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Upcoming</p>
-                            </div>
-                            <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.2)' }}></div>
-                            <div>
-                                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff6b6b', margin: 0 }}>{analyticsSummary.expiredCount}</p>
-                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Expired</p>
-                            </div>
+                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Upcoming (7 Days)</h3>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{analyticsSummary.upcomingCount}</p>
+                    </div>
+                    <div style={{
+                        background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 68, 68, 0.2) 100%)',
+                        backdropFilter: 'blur(10px)',
+                        padding: '20px',
+                        borderRadius: '15px',
+                        border: '1px solid rgba(255, 107, 107, 0.3)',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+                            <FaBell style={{ fontSize: '32px', color: '#ff6b6b' }} />
                         </div>
+                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Expired</h3>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff6b6b', margin: 0 }}>{analyticsSummary.expiredCount}</p>
                     </div>
                 </div>
             )}

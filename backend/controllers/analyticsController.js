@@ -29,19 +29,6 @@ const getSubscriptionStatus = (subscription) => {
         }
     }
 
-    // Check if "Upcoming" (due within 7 days)
-    if (subscription.nextBillingDate) {
-        const nextBilling = new Date(subscription.nextBillingDate);
-        nextBilling.setHours(0, 0, 0, 0);
-
-        const diffTime = nextBilling - now;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays >= 0 && diffDays <= 7) {
-            return 'upcoming';
-        }
-    }
-
     // Otherwise active
     return 'active';
 };
@@ -61,11 +48,17 @@ const isActiveInMonth = (subscription, month, year) => {
     monthEnd.setHours(23, 59, 59, 999);
 
     const startDate = new Date(subscription.startDate);
+    if (isNaN(startDate.getTime())) return false; // Invalid start date
     startDate.setHours(0, 0, 0, 0);
 
-    const endDate = subscription.endDate ? new Date(subscription.endDate) : null;
-    if (endDate) {
-        endDate.setHours(23, 59, 59, 999);
+    let endDate = null;
+    if (subscription.endDate) {
+        endDate = new Date(subscription.endDate);
+        if (isNaN(endDate.getTime())) {
+            endDate = null; // Treat invalid end date as ongoing
+        } else {
+            endDate.setHours(23, 59, 59, 999);
+        }
     }
 
     // Subscription must start before or during the month
@@ -120,19 +113,35 @@ const getAnalyticsSummary = async (req, res) => {
         subscriptions.forEach(sub => {
             const computedStatus = getSubscriptionStatus(sub);
 
+            // 1. Logic for counts
             if (computedStatus === 'active') {
                 activeCount++;
-
-                // Only include in monthly total if active in current month
-                if (isActiveInMonth(sub, currentMonth, currentYear)) {
-                    const monthlyExpense = getMonthlyExpense(sub);
-                    monthlyTotal += monthlyExpense;
-                    yearlyTotal += monthlyExpense * 12;
-                }
             } else if (computedStatus === 'expired') {
                 expiredCount++;
             } else if (computedStatus === 'upcoming') {
                 upcomingCount++;
+            }
+
+            // 2. Additional logic for "Upcoming / Expiring Soon" (due within 7 days)
+            // Even if it's currently 'active', it is ALSO 'upcoming' in terms of billing
+            if (computedStatus === 'active' && sub.nextBillingDate) {
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+                const nextBilling = new Date(sub.nextBillingDate);
+                nextBilling.setHours(0, 0, 0, 0);
+                const diffDays = Math.ceil((nextBilling - now) / (1000 * 60 * 60 * 24));
+
+                if (diffDays >= 0 && diffDays <= 7) {
+                    // Only increment if not already counted as upcoming (which it shouldn't be anyway)
+                    upcomingCount++;
+                }
+            }
+
+            // 3. Logic for spending (Must be active in current month)
+            if (isActiveInMonth(sub, currentMonth, currentYear)) {
+                const monthlyExpense = getMonthlyExpense(sub);
+                monthlyTotal += monthlyExpense;
+                yearlyTotal += monthlyExpense * 12;
             }
         });
 
