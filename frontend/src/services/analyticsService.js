@@ -3,46 +3,50 @@ import http from './http';
 const API_URL = '/api/analytics/';
 
 // Get analytics summary
-const getAnalyticsSummary = async (token) => {
+const getAnalyticsSummary = async (token, globalFilters = {}) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`,
         },
+        params: globalFilters
     };
     const response = await http.get(API_URL + 'summary', config);
     return response.data;
 };
 
 // Get category breakdown
-const getCategoryBreakdown = async (token, filter = 'current') => {
+const getCategoryBreakdown = async (token, filter = 'all_time', globalFilters = {}) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`,
         },
+        params: { ...globalFilters, filter }
     };
-    const response = await http.get(API_URL + `category-breakdown?filter=${filter}`, config);
+    const response = await http.get(API_URL + 'category-breakdown', config);
     return response.data;
 };
 
-// Get monthly trend
-const getMonthlyTrend = async (token) => {
+// Get monthly expenses
+const getMonthlyExpenses = async (token, globalFilters = {}) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`,
         },
+        params: globalFilters
     };
-    const response = await http.get(API_URL + 'monthly-trend', config);
+    const response = await http.get(API_URL + 'monthly-expenses', config);
     return response.data;
 };
 
 // Get top subscriptions
-const getTopSubscriptions = async (token, limit = 5, filter = 'current') => {
+const getTopSubscriptions = async (token, limit = 5, filter = 'allTime', globalFilters = {}) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`,
         },
+        params: { ...globalFilters, limit, filter }
     };
-    const response = await http.get(API_URL + `top-subscriptions?limit=${limit}&filter=${filter}`, config);
+    const response = await http.get(API_URL + 'top-subscriptions', config);
     return response.data;
 };
 
@@ -60,7 +64,7 @@ const getCategoryComparison = async (token, category) => {
 const analyticsService = {
     getAnalyticsSummary,
     getCategoryBreakdown,
-    getMonthlyTrend,
+    getMonthlyExpenses,
     getTopSubscriptions,
     getCategoryComparison
 };

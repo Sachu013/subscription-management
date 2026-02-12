@@ -6,6 +6,24 @@ const {
     getTotalAmountSpent
 } = require('../utils/subscriptionUtils');
 
+// Helper to get filtered subscriptions for analytics
+const getFilteredSubscriptions = async (req) => {
+    const { status, category } = req.query;
+    let query = { user: req.user.id };
+
+    if (category && category !== 'All') {
+        query.category = category;
+    }
+
+    let subscriptions = await Subscription.find(query);
+
+    if (status && status !== 'All') {
+        subscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === status);
+    }
+
+    return subscriptions;
+};
+
 // ==================== ANALYTICS ENDPOINTS ====================
 
 // @desc    Get analytics summary
@@ -13,7 +31,7 @@ const {
 // @access  Private
 const getAnalyticsSummary = async (req, res) => {
     try {
-        const subscriptions = await Subscription.find({ user: req.user.id });
+        const subscriptions = await getFilteredSubscriptions(req);
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
@@ -66,7 +84,7 @@ const getAnalyticsSummary = async (req, res) => {
 const getCategoryBreakdown = async (req, res) => {
     try {
         const filter = req.query.filter || 'all_time';
-        const subscriptions = await Subscription.find({ user: req.user.id });
+        const subscriptions = await getFilteredSubscriptions(req);
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
@@ -100,50 +118,47 @@ const getCategoryBreakdown = async (req, res) => {
             }
 
             if (categoryMap[category]) {
-                categoryMap[category].total += costToAdd;
-                categoryMap[category].count += 1;
+                categoryMap[category] += costToAdd;
             } else {
-                categoryMap[category] = {
-                    total: costToAdd,
-                    count: 1
-                };
+                categoryMap[category] = costToAdd;
             }
         });
 
-        const categoryData = Object.keys(categoryMap).map(category => ({
-            name: category,
-            value: parseFloat(categoryMap[category].total.toFixed(2)),
-            count: categoryMap[category].count
+        const breakdown = Object.keys(categoryMap).map(cat => ({
+            name: cat,
+            value: parseFloat(categoryMap[cat].toFixed(2))
         })).sort((a, b) => b.value - a.value);
 
-        res.status(200).json(categoryData);
+        res.status(200).json(breakdown);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    Get monthly spending trend (last 12 months)
-// @route   GET /api/analytics/monthly-trend
+// @desc    Get monthly expenses trend (last 6 months)
+// @route   GET /api/analytics/monthly-expenses
 // @access  Private
-const getMonthlyTrend = async (req, res) => {
+const getMonthlyExpenses = async (req, res) => {
     try {
-        const subscriptions = await Subscription.find({ user: req.user.id });
+        const subscriptions = await getFilteredSubscriptions(req);
         const monthlyData = [];
         const today = new Date();
 
-        for (let i = 11; i >= 0; i--) {
-            const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-            const month = date.getMonth();
-            const year = date.getFullYear();
-            const monthName = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            const month = d.getMonth();
+            const year = d.getFullYear();
+            const monthName = d.toLocaleString('default', { month: 'short' });
 
             let monthlyTotal = 0;
+
             subscriptions.forEach(sub => {
                 if (sub.payments) {
                     sub.payments.forEach(p => {
                         const pDate = new Date(p.paidOn);
                         if (pDate.getMonth() === month && pDate.getFullYear() === year) {
-                            monthlyTotal += (p.amount || 0);
+                            monthlyTotal += p.amount;
                         }
                     });
                 }
@@ -169,7 +184,8 @@ const getTopSubscriptions = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 5;
         const filter = req.query.filter || 'allTime';
-        const subscriptions = await Subscription.find({ user: req.user.id });
+        // Use global filters first, then specific ones
+        const subscriptions = await getFilteredSubscriptions(req);
 
         let filteredSubscriptions = subscriptions;
         if (filter === 'activeOnly') {
@@ -234,7 +250,7 @@ const getCategoryComparison = async (req, res) => {
 module.exports = {
     getAnalyticsSummary,
     getCategoryBreakdown,
-    getMonthlyTrend,
+    getMonthlyExpenses,
     getTopSubscriptions,
     getCategoryComparison
 };

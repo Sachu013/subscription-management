@@ -5,12 +5,17 @@ import analyticsService from '../services/analyticsService';
 import Spinner from '../components/Spinner';
 import { toast } from 'react-toastify';
 import { PieChart, Pie, LineChart, Line, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { FaArrowLeft, FaChartPie, FaChartLine, FaTrophy, FaChartBar } from 'react-icons/fa';
+import { FaArrowLeft, FaChartPie, FaChartLine, FaTrophy, FaChartBar, FaTimes } from 'react-icons/fa';
+import FilterBar from '../components/FilterBar';
 
 const Analytics = () => {
     const navigate = useNavigate();
     const { user, logout } = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Filter states
+    const [globalStatus, setGlobalStatus] = useState('All');
+    const [globalCategory, setGlobalCategory] = useState('All');
 
     // Analytics data from backend
     const [metrics, setMetrics] = useState(null);
@@ -18,27 +23,49 @@ const Analytics = () => {
     const [monthlyTrend, setMonthlyTrend] = useState([]);
     const [topSubscriptions, setTopSubscriptions] = useState([]);
 
-    // Filter states
-    const [categoryFilter, setCategoryFilter] = useState('all_time');
+    // Internal breakdown filters
+    const [breakdownFilter, setBreakdownFilter] = useState('all_time');
     const [topSubFilter, setTopSubFilter] = useState('allTime');
+
+    const categories = [
+        'Entertainment', 'Music', 'OTT / Streaming', 'Gaming', 'Education',
+        'Productivity', 'Cloud Services', 'Developer Tools', 'Design Tools',
+        'Finance', 'Health & Fitness', 'Food & Delivery', 'News & Media',
+        'Shopping', 'Utilities', 'Travel', 'Storage', 'Communication',
+        'Security', 'AI Tools', 'Other'
+    ];
+
+    const resetFilters = () => {
+        setGlobalStatus('All');
+        setGlobalCategory('All');
+    };
 
     useEffect(() => {
         if (!user) {
             navigate('/login');
         } else {
-            const fetchAnalytics = async () => {
+            const fetchAnalyticsData = async () => {
                 try {
                     const storedUser = JSON.parse(localStorage.getItem('user'));
                     const token = storedUser ? storedUser.token : null;
 
                     if (token) {
-                        // Fetch metrics and trend once (not affected by current filters)
-                        const [summary, trend] = await Promise.all([
-                            analyticsService.getAnalyticsSummary(token),
-                            analyticsService.getMonthlyTrend(token)
+                        const globalFilters = {
+                            status: globalStatus,
+                            category: globalCategory
+                        };
+
+                        const [summary, trend, breakdown, top] = await Promise.all([
+                            analyticsService.getAnalyticsSummary(token, globalFilters),
+                            analyticsService.getMonthlyExpenses(token, globalFilters),
+                            analyticsService.getCategoryBreakdown(token, breakdownFilter, globalFilters),
+                            analyticsService.getTopSubscriptions(token, 5, topSubFilter, globalFilters)
                         ]);
+
                         setMetrics(summary);
                         setMonthlyTrend(trend);
+                        setCategoryData(breakdown);
+                        setTopSubscriptions(top);
                     }
                 } catch (error) {
                     const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
@@ -47,35 +74,9 @@ const Analytics = () => {
                     setIsLoading(false);
                 }
             }
-            fetchAnalytics();
+            fetchAnalyticsData();
         }
-    }, [user, navigate]);
-
-    // Refetch Category Breakdown when filter changes
-    useEffect(() => {
-        const fetchCategoryData = async () => {
-            const storedUser = JSON.parse(localStorage.getItem('user'));
-            const token = storedUser?.token;
-            if (token) {
-                const data = await analyticsService.getCategoryBreakdown(token, categoryFilter);
-                setCategoryData(data);
-            }
-        };
-        fetchCategoryData();
-    }, [categoryFilter]);
-
-    // Refetch Top Subscriptions when filter changes
-    useEffect(() => {
-        const fetchTopSubs = async () => {
-            const storedUser = JSON.parse(localStorage.getItem('user'));
-            const token = storedUser?.token;
-            if (token) {
-                const data = await analyticsService.getTopSubscriptions(token, 5, topSubFilter);
-                setTopSubscriptions(data);
-            }
-        };
-        fetchTopSubs();
-    }, [topSubFilter]);
+    }, [user, navigate, globalStatus, globalCategory, breakdownFilter, topSubFilter]);
 
     const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#fee140', '#30cfd0'];
 
@@ -99,6 +100,16 @@ const Analytics = () => {
                     <button onClick={logout} className="btn">Logout</button>
                 </div>
             </header>
+
+            <FilterBar
+                status={globalStatus}
+                setStatus={setGlobalStatus}
+                category={globalCategory}
+                setCategory={setGlobalCategory}
+                categories={categories}
+                onReset={resetFilters}
+                showAdvanced={false}
+            />
 
             {/* Metrics Cards */}
             <div style={{

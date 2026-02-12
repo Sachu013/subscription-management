@@ -14,12 +14,13 @@ const createSubscription = async (subscriptionData, token) => {
     return response.data;
 };
 
-// Get user subscriptions
-const getSubscriptions = async (token) => {
+// Get user subscriptions with optional filters
+const getSubscriptions = async (token, params = {}) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`,
         },
+        params: params
     };
 
     const response = await http.get(API_URL, config);

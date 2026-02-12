@@ -4,18 +4,35 @@ import AuthContext from '../context/AuthContext';
 import subscriptionService from '../services/subscriptionService';
 import Spinner from '../components/Spinner';
 import { toast } from 'react-toastify';
-import { FaArrowLeft, FaFileDownload, FaCalendar } from 'react-icons/fa';
+import { FaArrowLeft, FaFileDownload, FaCalendar, FaTimes } from 'react-icons/fa';
+import FilterBar from '../components/FilterBar';
 
 const Reports = () => {
     const navigate = useNavigate();
     const { user, logout } = useContext(AuthContext);
     const [subscriptions, setSubscriptions] = useState([]);
-    const [filteredReports, setFilteredReports] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Date filters
+    // Filter states
+    const [status, setStatus] = useState('All');
+    const [category, setCategory] = useState('All');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+
+    const categories = [
+        'Entertainment', 'Music', 'OTT / Streaming', 'Gaming', 'Education',
+        'Productivity', 'Cloud Services', 'Developer Tools', 'Design Tools',
+        'Finance', 'Health & Fitness', 'Food & Delivery', 'News & Media',
+        'Shopping', 'Utilities', 'Travel', 'Storage', 'Communication',
+        'Security', 'AI Tools', 'Other'
+    ];
+
+    const resetFilters = () => {
+        setStatus('All');
+        setCategory('All');
+        setStartDate('');
+        setEndDate('');
+    };
 
     const fetchSubscriptions = useCallback(async () => {
         try {
@@ -23,38 +40,22 @@ const Reports = () => {
             const token = storedUser ? storedUser.token : null;
 
             if (token) {
-                const subs = await subscriptionService.getSubscriptions(token);
+                const params = {
+                    status: status,
+                    category: category,
+                    minDate: startDate,
+                    maxDate: endDate
+                };
+                const subs = await subscriptionService.getSubscriptions(token, params);
                 setSubscriptions(subs);
-                filterSubscriptions(subs, '', '');
             }
         } catch (error) {
-            const message =
-                (error.response && error.response.data && error.response.data.message) ||
-                error.message ||
-                error.toString();
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
             toast.error(message);
         } finally {
             setIsLoading(false);
         }
-    }, []);
-
-    const filterSubscriptions = (subs, start, end) => {
-        // Filter for any status or specific logic as needed
-        let filtered = subs;
-
-        // Apply date range filter if provided
-        if (start && end) {
-            const startDateTime = new Date(start).getTime();
-            const endDateTime = new Date(end).getTime();
-
-            filtered = filtered.filter(sub => {
-                const subDate = new Date(sub.createdAt || sub.startDate).getTime();
-                return subDate >= startDateTime && subDate <= endDateTime;
-            });
-        }
-
-        setFilteredReports(filtered);
-    };
+    }, [status, category, startDate, endDate]);
 
     useEffect(() => {
         if (!user) {
@@ -65,27 +66,21 @@ const Reports = () => {
     }, [user, navigate, fetchSubscriptions]);
 
     const handleGenerateReport = () => {
-        if (startDate && endDate) {
-            if (new Date(startDate) > new Date(endDate)) {
-                toast.error('Start date must be before end date');
-                return;
-            }
-        }
-        filterSubscriptions(subscriptions, startDate, endDate);
-        toast.success('Report generated successfully!');
+        fetchSubscriptions();
+        toast.success('Report updated!');
     };
 
     const handleExportCSV = () => {
-        if (filteredReports.length === 0) {
+        if (subscriptions.length === 0) {
             toast.warning('No data to export');
             return;
         }
 
         // Create CSV content
-        const headers = ['Name', 'Category', 'Price', 'Total Spent', 'Billing Cycle', 'Start Date', 'Status', 'Created At'];
+        const headers = ['Name', 'Category', 'Price', 'Total Spent', 'Billing Cycle', 'Start Date', 'Status'];
         const csvRows = [headers.join(',')];
 
-        filteredReports.forEach(sub => {
+        subscriptions.forEach(sub => {
             const row = [
                 `"${sub.name}"`,
                 `"${sub.category || 'N/A'}"`,
@@ -130,48 +125,66 @@ const Reports = () => {
                     </button>
                     <h1>Subscription Reports</h1>
                 </div>
-                <button onClick={logout} className="btn">Logout</button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={logout} className="btn">Logout</button>
+                </div>
             </header>
 
-            {/* Date Range Filter */}
-            <div className="controls" style={{ marginBottom: '30px' }}>
-                <div className="control-group">
-                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>
-                        <FaCalendar style={{ marginRight: '5px' }} />
-                        From Date
-                    </label>
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                    />
+            <FilterBar
+                status={status}
+                setStatus={setStatus}
+                category={category}
+                setCategory={setCategory}
+                categories={categories}
+                onReset={resetFilters}
+                showAdvanced={false}
+            />
+
+            <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: 'blur(10px)',
+                padding: '25px',
+                borderRadius: '15px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                marginBottom: '30px'
+            }}>
+                <h2 style={{ fontSize: '18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <FaCalendar /> Date Range (Subscription Start)
+                </h2>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'flex-end' }}>
+                    <div style={{ flex: 1, minWidth: '200px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>Start Date</label>
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                        />
+                    </div>
+                    <div style={{ flex: 1, minWidth: '200px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>End Date</label>
+                        <input
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                        />
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button onClick={handleGenerateReport} className="btn" style={{ height: '42px', padding: '0 25px' }}>
+                            Update Report
+                        </button>
+                        <button onClick={handleExportCSV} className="btn" style={{
+                            height: '42px',
+                            padding: '0 25px',
+                            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                            color: '#000',
+                            fontWeight: 'bold'
+                        }}
+                            disabled={subscriptions.length === 0}
+                        >
+                            <FaFileDownload style={{ marginRight: '8px' }} /> Export CSV
+                        </button>
+                    </div>
                 </div>
-                <div className="control-group">
-                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>
-                        <FaCalendar style={{ marginRight: '5px' }} />
-                        To Date
-                    </label>
-                    <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                    />
-                </div>
-                <button
-                    className="btn"
-                    onClick={handleGenerateReport}
-                    style={{ display: 'flex', alignItems: 'center', gap: '5px', alignSelf: 'flex-end' }}
-                >
-                    Generate Report
-                </button>
-                <button
-                    className="btn"
-                    onClick={handleExportCSV}
-                    style={{ display: 'flex', alignItems: 'center', gap: '5px', backgroundColor: '#43e97b', alignSelf: 'flex-end' }}
-                    disabled={filteredReports.length === 0}
-                >
-                    <FaFileDownload /> Export CSV
-                </button>
             </div>
 
             {/* Summary Stats */}
@@ -189,90 +202,66 @@ const Reports = () => {
             }}>
                 <div style={{ textAlign: 'center' }}>
                     <h3 style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '5px' }}>Involved Subscriptions</h3>
-                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#667eea' }}>{filteredReports.length}</p>
+                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#667eea' }}>{subscriptions.length}</p>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                     <h3 style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '5px' }}>Active</h3>
                     <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#43e97b' }}>
-                        {filteredReports.filter(s => s.status === 'Active').length}
+                        {subscriptions.filter(s => s.status === 'Active').length}
                     </p>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                     <h3 style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '5px' }}>Expired</h3>
                     <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#ff9800' }}>
-                        {filteredReports.filter(s => s.status === 'Expired').length}
+                        {subscriptions.filter(s => s.status === 'Expired').length}
                     </p>
                 </div>
             </div>
 
-            {/* Reports Table */}
-            <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                padding: '25px',
-                borderRadius: '15px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                overflowX: 'auto'
-            }}>
-                <h2 style={{ marginBottom: '20px' }}>Subscription History Report</h2>
-                {filteredReports.length > 0 ? (
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '2px solid rgba(255, 255, 255, 0.2)' }}>
-                                <th style={{ padding: '12px', textAlign: 'left' }}>Name</th>
-                                <th style={{ padding: '12px', textAlign: 'left' }}>Category</th>
-                                <th style={{ padding: '12px', textAlign: 'right' }}>Price</th>
-                                <th style={{ padding: '12px', textAlign: 'right' }}>Total Spent</th>
-                                <th style={{ padding: '12px', textAlign: 'left' }}>Billing Cycle</th>
-                                <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
-                                <th style={{ padding: '12px', textAlign: 'left' }}>Created</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredReports.map((sub, index) => (
-                                <tr
-                                    key={sub._id}
-                                    style={{
-                                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                                        backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.05)' : 'transparent'
-                                    }}
-                                >
-                                    <td style={{ padding: '12px' }}>{sub.name}</td>
-                                    <td style={{ padding: '12px' }}>{sub.category || 'N/A'}</td>
-                                    <td style={{ padding: '12px', textAlign: 'right' }}>₹{sub.price}</td>
-                                    <td style={{ padding: '12px', textAlign: 'right' }}>₹{sub.totalSpent || 0}</td>
-                                    <td style={{ padding: '12px' }}>{sub.billingCycle}</td>
-                                    <td style={{ padding: '12px' }}>
-                                        <span style={{
-                                            padding: '4px 12px',
-                                            borderRadius: '12px',
-                                            fontSize: '12px',
-                                            fontWeight: 'bold',
-                                            backgroundColor: sub.status === 'Active' ? 'rgba(67, 233, 123, 0.2)' : 'rgba(255, 152, 0, 0.2)',
-                                            color: sub.status === 'Active' ? '#43e97b' : '#ff9800'
-                                        }}>
-                                            {sub.status}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '12px' }}>{new Date(sub.createdAt || sub.startDate).toLocaleDateString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                ) : (
-                    <div style={{
-                        textAlign: 'center',
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        padding: '40px',
-                        background: 'rgba(255,255,255,0.08)',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        borderRadius: '12px'
+            <div className="report-content">
+                {subscriptions.length > 0 ? (
+                    <div className="table-responsive" style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        borderRadius: '15px',
+                        overflow: 'hidden',
+                        border: '1px solid rgba(255, 255, 255, 0.1)'
                     }}>
-                        <h3 style={{ marginBottom: '10px' }}>No report data</h3>
-                        <p>
-                            No subscriptions found.
-                            {startDate && endDate && ' Try adjusting the date range.'}
-                        </p>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                            <thead>
+                                <tr style={{ background: 'rgba(255, 255, 255, 0.1)' }}>
+                                    <th style={{ padding: '15px' }}>Name</th>
+                                    <th style={{ padding: '15px' }}>Category</th>
+                                    <th style={{ padding: '15px' }}>Price</th>
+                                    <th style={{ padding: '15px' }}>Status</th>
+                                    <th style={{ padding: '15px' }}>Total Spent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {subscriptions.map(sub => (
+                                    <tr key={sub._id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                                        <td style={{ padding: '15px' }}>{sub.name}</td>
+                                        <td style={{ padding: '15px' }}>{sub.category}</td>
+                                        <td style={{ padding: '15px' }}>₹{sub.price}</td>
+                                        <td style={{ padding: '15px' }}>
+                                            <span style={{
+                                                padding: '4px 10px',
+                                                borderRadius: '12px',
+                                                fontSize: '12px',
+                                                background: sub.status === 'Active' ? 'rgba(67, 233, 123, 0.2)' : 'rgba(255, 107, 107, 0.2)',
+                                                color: sub.status === 'Active' ? '#43e97b' : '#ff6b6b'
+                                            }}>
+                                                {sub.status}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '15px' }}>₹{sub.totalSpent}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div style={{ textAlign: 'center', padding: '50px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '15px' }}>
+                        <p style={{ color: 'rgba(255, 255, 255, 0.5)' }}>No data found for the current filters.</p>
                     </div>
                 )}
             </div>

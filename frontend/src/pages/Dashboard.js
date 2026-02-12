@@ -21,6 +21,9 @@ import SubscriptionForm from '../components/SubscriptionForm';
 import SubscriptionItem from '../components/SubscriptionItem';
 import AddPaymentModal from '../components/AddPaymentModal';
 
+import useDebounce from '../hooks/useDebounce';
+import FilterBar from '../components/FilterBar';
+
 const Dashboard = () => {
     const navigate = useNavigate();
     const { user, logout } = useContext(AuthContext);
@@ -42,7 +45,12 @@ const Dashboard = () => {
 
     // Controls State
     const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearch = useDebounce(searchTerm, 300);
     const [filterCategory, setFilterCategory] = useState('All');
+    const [filterStatus, setFilterStatus] = useState('All');
+    const [billingCycle, setBillingCycle] = useState('All');
+    const [minPrice, setMinPrice] = useState('');
+    const [maxPrice, setMaxPrice] = useState('');
     const [sortBy, setSortBy] = useState('date-asc');
 
     // Edit Mode State
@@ -60,9 +68,18 @@ const Dashboard = () => {
                     const token = storedUser ? storedUser.token : null;
 
                     if (token) {
+                        const params = {
+                            search: debouncedSearch,
+                            status: filterStatus,
+                            category: filterCategory,
+                            billingCycle: billingCycle,
+                            minPrice: minPrice,
+                            maxPrice: maxPrice
+                        };
+
                         const [subs, summary] = await Promise.all([
-                            subscriptionService.getSubscriptions(token),
-                            analyticsService.getAnalyticsSummary(token)
+                            subscriptionService.getSubscriptions(token, params),
+                            analyticsService.getAnalyticsSummary(token, params)
                         ]);
 
                         setSubscriptions(subs);
@@ -78,23 +95,11 @@ const Dashboard = () => {
             }
             fetchDashboardData();
         }
-    }, [user, navigate]);
+    }, [user, navigate, debouncedSearch, filterStatus, filterCategory, billingCycle, minPrice, maxPrice]);
 
-    // Handle Search, Filter, Sort
+    // Handle Sort (Backend handles filtering, Frontend handles sorting for responsiveness)
     useEffect(() => {
         let result = [...subscriptions];
-
-        if (filterCategory !== 'All') {
-            result = result.filter(sub =>
-                sub.category && sub.category.toLowerCase() === filterCategory.toLowerCase()
-            );
-        }
-
-        if (searchTerm) {
-            result = result.filter(sub =>
-                sub.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
 
         result.sort((a, b) => {
             if (sortBy === 'date-asc') {
@@ -114,7 +119,7 @@ const Dashboard = () => {
         });
 
         setFilteredSubscriptions(result);
-    }, [subscriptions, searchTerm, filterCategory, sortBy]);
+    }, [subscriptions, sortBy]);
 
 
     const handleLogout = () => {
@@ -215,6 +220,15 @@ const Dashboard = () => {
         setCurrentSubscription(null);
         setShowForm(false);
     }
+
+    const resetFilters = () => {
+        setSearchTerm('');
+        setFilterCategory('All');
+        setFilterStatus('All');
+        setBillingCycle('All');
+        setMinPrice('');
+        setMaxPrice('');
+    };
 
     const categories = [
         'All',
@@ -426,27 +440,26 @@ const Dashboard = () => {
 
             {/* Controls Area */}
             {!showForm && (
-                <div className="controls">
-                    <div className="control-group">
-                        <div style={{ position: 'relative' }}>
-                            <FaSearch style={{ position: 'absolute', top: '12px', left: '10px', color: '#999' }} />
-                            <input
-                                type="text"
-                                placeholder="Search subscriptions..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                style={{ paddingLeft: '35px' }}
-                            />
-                        </div>
-                    </div>
-                    <div className="control-group">
-                        <FaFilter style={{ marginRight: '5px', color: '#666' }} />
-                        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-                            {categories.map((cat, index) => (
-                                <option key={index} value={cat}>{cat}</option>
-                            ))}
-                        </select>
-                    </div>
+                <FilterBar
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    status={filterStatus}
+                    setStatus={setFilterStatus}
+                    category={filterCategory}
+                    setCategory={setFilterCategory}
+                    categories={categories.filter(c => c !== 'All')}
+                    billingCycle={billingCycle}
+                    setBillingCycle={setBillingCycle}
+                    minPrice={minPrice}
+                    setMinPrice={setMinPrice}
+                    maxPrice={maxPrice}
+                    setMaxPrice={setMaxPrice}
+                    onReset={resetFilters}
+                />
+            )}
+
+            {!showForm && (
+                <div className="controls" style={{ marginBottom: '20px', justifyContent: 'flex-end' }}>
                     <div className="control-group">
                         <FaSort style={{ marginRight: '5px', color: '#666' }} />
                         <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>

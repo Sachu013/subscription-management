@@ -19,13 +19,56 @@ const formatSubscription = (sub) => {
     };
 };
 
-// @desc    Get subscriptions
+// @desc    Get subscriptions with multi-layer filtering
 // @route   GET /api/subscriptions
 // @access  Private
 const getSubscriptions = async (req, res) => {
     try {
-        const subscriptions = await Subscription.find({ user: req.user.id });
-        const formatted = subscriptions.map(formatSubscription);
+        const { search, status, category, billingCycle, minPrice, maxPrice } = req.query;
+
+        // Build initial query
+        let query = { user: req.user.id };
+
+        // Search by name (case-insensitive)
+        if (search) {
+            query.name = { $regex: search, $options: 'i' };
+        }
+
+        // Category filter (if not "All")
+        if (category && category !== 'All') {
+            query.category = category;
+        }
+
+        // Billing Cycle filter (if not "All")
+        if (billingCycle && billingCycle !== 'All') {
+            query.billingCycle = billingCycle;
+        }
+
+        // Price range filter
+        if (minPrice || maxPrice) {
+            query.price = {};
+            if (minPrice) query.price.$gte = Number(minPrice);
+            if (maxPrice) query.price.$lte = Number(maxPrice);
+        }
+
+        // Date range filter (startDate)
+        if (req.query.minDate || req.query.maxDate) {
+            query.startDate = {};
+            if (req.query.minDate) query.startDate.$gte = new Date(req.query.minDate);
+            if (req.query.maxDate) query.startDate.$lte = new Date(req.query.maxDate);
+        }
+
+        // Fetch from DB
+        const subscriptions = await Subscription.find(query);
+
+        // Format and compute dynamic fields (including status)
+        let formatted = subscriptions.map(formatSubscription);
+
+        // Filter by status (since status is dynamic and not in DB)
+        if (status && status !== 'All') {
+            formatted = formatted.filter(sub => sub.status === status);
+        }
+
         res.status(200).json(formatted);
     } catch (error) {
         res.status(500).json({ message: error.message });
