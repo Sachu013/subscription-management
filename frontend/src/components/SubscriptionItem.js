@@ -14,27 +14,17 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit }) => {
     };
 
     const getLifecycleStatus = () => {
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
+        const status = subscription.computedStatus;
 
-        const startDate = new Date(subscription.startDate);
-        startDate.setHours(0, 0, 0, 0);
-
-        // 1. Upcoming: startDate > today
-        if (startDate > now) {
+        if (status === 'UPCOMING') {
             return { label: 'Upcoming', color: '#ffc107', icon: '🟡' };
         }
 
-        // 2. Expired: endDate exists AND endDate < today
-        if (subscription.endDate) {
-            const endDate = new Date(subscription.endDate);
-            endDate.setHours(0, 0, 0, 0);
-            if (endDate < now) {
-                return { label: 'Expired', color: '#ff4d4d', icon: '🔴' };
-            }
+        if (status === 'EXPIRED') {
+            return { label: 'Expired', color: '#ff4d4d', icon: '🔴' };
         }
 
-        // 3. Active: Otherwise
+        // Default to ACTIVE
         return { label: 'Active', color: '#43e97b', icon: '🟢' };
     };
 

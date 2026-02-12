@@ -1,5 +1,6 @@
 const Subscription = require('../models/subscriptionModel');
 const User = require('../models/userModel');
+const { getSubscriptionStatus } = require('../utils/subscriptionUtils');
 
 // @desc    Get subscriptions
 // @route   GET /api/subscriptions
@@ -7,7 +8,17 @@ const User = require('../models/userModel');
 const getSubscriptions = async (req, res) => {
     try {
         const subscriptions = await Subscription.find({ user: req.user.id });
-        res.status(200).json(subscriptions);
+
+        // Add computedStatus to each subscription
+        const subscriptionsWithStatus = subscriptions.map(sub => {
+            const subObj = sub.toObject();
+            return {
+                ...subObj,
+                computedStatus: getSubscriptionStatus(sub)
+            };
+        });
+
+        res.status(200).json(subscriptionsWithStatus);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -154,16 +165,7 @@ const getUpcomingPayments = async (req, res) => {
         const upcomingPayments = subscriptions
             .filter(sub => {
                 // 1. Must be dynamic "Active"
-                const startDate = new Date(sub.startDate);
-                startDate.setHours(0, 0, 0, 0);
-
-                if (startDate > today) return false; // Not yet started
-
-                if (sub.endDate) {
-                    const endDate = new Date(sub.endDate);
-                    endDate.setHours(0, 0, 0, 0);
-                    if (endDate < today) return false; // Already ended
-                }
+                if (getSubscriptionStatus(sub) !== 'ACTIVE') return false;
 
                 // 2. Check if nextBillingDate is within next 7 days
                 if (!sub.nextBillingDate) return false;

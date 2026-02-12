@@ -1,88 +1,9 @@
 const Subscription = require('../models/subscriptionModel');
-
-// ==================== HELPER FUNCTIONS ====================
-
-/**
- * Calculate subscription status based on dates
- * @param {Object} subscription - Subscription object
- * @returns {string} - 'active', 'expired', or 'upcoming'
- */
-const getSubscriptionStatus = (subscription) => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
-    const startDate = new Date(subscription.startDate);
-    startDate.setHours(0, 0, 0, 0);
-
-    // 1. Upcoming: startDate > today
-    if (startDate > now) {
-        return 'upcoming';
-    }
-
-    // 2. Expired: endDate exists AND endDate < today
-    if (subscription.endDate) {
-        const endDate = new Date(subscription.endDate);
-        endDate.setHours(0, 0, 0, 0);
-
-        if (endDate < now) {
-            return 'expired';
-        }
-    }
-
-    // 3. Active: startDate <= today AND (endDate is NULL OR endDate >= today)
-    // (Already covered by exclusion, but explicit for clarity)
-    return 'active';
-};
-
-/**
- * Check if subscription is active in a specific month
- * @param {Object} subscription - Subscription object
- * @param {number} month - Month (0-11)
- * @param {number} year - Year
- * @returns {boolean} - True if active in the month
- */
-const isActiveInMonth = (subscription, month, year) => {
-    const monthStart = new Date(year, month, 1);
-    monthStart.setHours(0, 0, 0, 0);
-
-    const monthEnd = new Date(year, month + 1, 0);
-    monthEnd.setHours(23, 59, 59, 999);
-
-    const startDate = new Date(subscription.startDate);
-    if (isNaN(startDate.getTime())) return false;
-    startDate.setHours(0, 0, 0, 0);
-
-    let endDate = null;
-    if (subscription.endDate) {
-        endDate = new Date(subscription.endDate);
-        if (isNaN(endDate.getTime())) {
-            endDate = null;
-        } else {
-            endDate.setHours(23, 59, 59, 999);
-        }
-    }
-
-    // A subscription is active in that month IF:
-    // startDate <= monthEnd AND (endDate is NULL OR endDate >= monthStart)
-    return startDate <= monthEnd && (endDate === null || endDate >= monthStart);
-};
-
-/**
- * Get normalized monthly cost
- * @param {Object} subscription - Subscription object
- * @returns {number} - Normalized monthly cost
- */
-const getNormalizedMonthlyCost = (subscription) => {
-    const cost = subscription.cost || 0;
-    if (subscription.billingCycle === 'Monthly') {
-        return cost;
-    } else if (subscription.billingCycle === 'Yearly') {
-        return cost / 12;
-    } else if (subscription.billingCycle === 'Weekly') {
-        return cost * 4;
-    }
-    return cost;
-};
+const {
+    getSubscriptionStatus,
+    isActiveInMonth,
+    getNormalizedMonthlyCost
+} = require('../utils/subscriptionUtils');
 
 // ==================== ANALYTICS ENDPOINTS ====================
 
@@ -108,11 +29,11 @@ const getAnalyticsSummary = async (req, res) => {
             const computedStatus = getSubscriptionStatus(sub);
 
             // 1. Mandatory Counts
-            if (computedStatus === 'active') {
+            if (computedStatus === 'ACTIVE') {
                 activeCount++;
-            } else if (computedStatus === 'expired') {
+            } else if (computedStatus === 'EXPIRED') {
                 expiredCount++;
-            } else if (computedStatus === 'upcoming') {
+            } else if (computedStatus === 'UPCOMING') {
                 upcomingCount++;
             }
 
@@ -159,9 +80,9 @@ const getCategoryBreakdown = async (req, res) => {
 
         let filteredSubscriptions = subscriptions;
         if (filter === 'current') {
-            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'active');
+            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'ACTIVE');
         } else if (filter === 'expired') {
-            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'expired');
+            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'EXPIRED');
         }
 
         const categoryMap = {};
@@ -241,7 +162,7 @@ const getTopSubscriptions = async (req, res) => {
 
         let filteredSubscriptions = subscriptions;
         if (filter === 'current') {
-            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'active');
+            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'ACTIVE');
         }
 
         const subscriptionsWithMonthlyCost = filteredSubscriptions.map(sub => {
@@ -277,7 +198,7 @@ const getCategoryComparison = async (req, res) => {
         });
 
         // Use dynamic active status
-        const activeSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'active');
+        const activeSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'ACTIVE');
 
         const comparisonData = activeSubscriptions.map(sub => {
             return {
