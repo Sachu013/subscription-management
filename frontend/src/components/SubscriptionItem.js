@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay }) => {
+const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay, onPause }) => {
     const getLifecycleStatus = () => {
         const { status } = subscription;
 
