@@ -213,13 +213,14 @@ const getTopSubscriptions = async (req, res) => {
         }
 
         const subscriptionsWithTotalCost = filteredSubscriptions.map(sub => {
+            const price = sub.price !== undefined ? sub.price : (sub.cost !== undefined ? sub.cost : 0);
             return {
                 _id: sub._id,
                 name: sub.name,
                 category: sub.category,
-                price: sub.price,
+                price: price,
                 billingCycle: sub.billingCycle,
-                totalSpent: parseFloat(getTotalAmountSpent(sub).toFixed(2))
+                totalSpent: getTotalAmountSpent(sub)
             };
         });
 
@@ -248,13 +249,16 @@ const getCategoryComparison = async (req, res) => {
         const activeSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'Active');
 
         const comparisonData = activeSubscriptions.map(sub => {
+            const price = sub.price !== undefined ? sub.price : (sub.cost !== undefined ? sub.cost : 0);
+            const monthlyCost = getNormalizedMonthlyCost(sub);
+
             return {
                 _id: sub._id,
                 name: sub.name,
-                price: sub.price,
+                price: price,
                 billingCycle: sub.billingCycle,
-                monthlyCost: parseFloat(getNormalizedMonthlyCost(sub).toFixed(2)),
-                totalSpent: parseFloat(getTotalAmountSpent(sub).toFixed(2)),
+                monthlyCost: parseFloat(monthlyCost.toFixed(2)),
+                totalSpent: getTotalAmountSpent(sub),
                 startDate: sub.startDate
             };
         }).sort((a, b) => b.totalSpent - a.totalSpent);

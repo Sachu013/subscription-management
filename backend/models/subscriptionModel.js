@@ -17,7 +17,7 @@ const subscriptionSchema = mongoose.Schema(
         },
         price: {
             type: Number,
-            required: [true, 'Please add the price'],
+            required: false, // Made optional to support legacy 'cost' field
         },
         currency: {
             type: String,

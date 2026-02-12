@@ -58,7 +58,8 @@ const getSubscriptionStatus = (sub) => {
  */
 const getTotalAmountSpent = (sub) => {
     const payments = sub.payments || [];
-    return parseFloat(payments.reduce((sum, p) => sum + p.amount, 0).toFixed(2));
+    const total = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+    return parseFloat(total.toFixed(2));
 };
 
 /**
@@ -101,10 +102,12 @@ const isActiveInMonth = (sub, month, year) => {
  * Get monthly normalized cost for comparison
  */
 const getNormalizedMonthlyCost = (sub) => {
+    const price = sub.price !== undefined ? sub.price : (sub.cost !== undefined ? sub.cost : 0);
     const cycle = sub.billingCycle ? sub.billingCycle.toLowerCase() : 'monthly';
-    if (cycle === 'monthly') return sub.price;
-    if (cycle === 'yearly') return sub.price / 12;
-    return sub.price;
+
+    if (cycle === 'monthly') return price;
+    if (cycle === 'yearly') return price / 12;
+    return price;
 };
 
 module.exports = {

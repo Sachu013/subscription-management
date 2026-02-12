@@ -216,11 +216,17 @@ const paySubscription = async (req, res) => {
 
         // Use manual date or today
         const paidOn = req.body.paidOn ? new Date(req.body.paidOn) : new Date();
-        const amount = req.body.amount || subscription.price;
+        const price = subscription.price !== undefined ? subscription.price : subscription.cost;
+        const amount = req.body.amount !== undefined ? req.body.amount : price;
+
+        if (amount === undefined || amount === null) {
+            console.error('Payment failed: amount is undefined for sub', subscription._id);
+            return res.status(400).json({ message: 'Could not determine payment amount. Please provide an amount.' });
+        }
 
         subscription.payments.push({
             paidOn,
-            amount
+            amount: Number(amount)
         });
 
         await subscription.save();
