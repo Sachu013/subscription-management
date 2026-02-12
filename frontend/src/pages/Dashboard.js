@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import subscriptionService from '../services/subscriptionService';
+import analyticsService from '../services/analyticsService';
 import SubscriptionForm from '../components/SubscriptionForm';
 import SubscriptionItem from '../components/SubscriptionItem';
 import Spinner from '../components/Spinner';
@@ -14,6 +15,12 @@ const Dashboard = () => {
 
     const [subscriptions, setSubscriptions] = useState([]);
     const [filteredSubscriptions, setFilteredSubscriptions] = useState([]);
+    const [analyticsSummary, setAnalyticsSummary] = useState({
+        activeCount: 0,
+        expiredCount: 0,
+        upcomingCount: 0,
+        monthlyTotal: 0
+    });
     const [isLoading, setIsLoading] = useState(true);
 
     // Controls State
@@ -33,18 +40,22 @@ const Dashboard = () => {
         if (!user) {
             navigate('/login');
         } else {
-            const fetchSubscriptions = async () => {
+            const fetchDashboardData = async () => {
                 try {
                     const storedUser = JSON.parse(localStorage.getItem('user'));
                     const token = storedUser ? storedUser.token : null;
 
                     if (token) {
-                        const subs = await subscriptionService.getSubscriptions(token);
+                        // Fetch subscriptions and analytics in parallel
+                        const [subs, summary, upcoming] = await Promise.all([
+                            subscriptionService.getSubscriptions(token),
+                            analyticsService.getAnalyticsSummary(token),
+                            subscriptionService.getUpcomingPayments(token)
+                        ]);
+
                         setSubscriptions(subs);
                         setFilteredSubscriptions(subs);
-
-                        // Fetch upcoming payments
-                        const upcoming = await subscriptionService.getUpcomingPayments(token);
+                        setAnalyticsSummary(summary);
                         setUpcomingPayments(upcoming);
                     }
                 } catch (error) {
@@ -54,7 +65,7 @@ const Dashboard = () => {
                     setIsLoading(false);
                 }
             }
-            fetchSubscriptions();
+            fetchDashboardData();
         }
     }, [user, navigate]);
 
@@ -105,7 +116,9 @@ const Dashboard = () => {
             const storedUser = JSON.parse(localStorage.getItem('user'));
             const token = storedUser.token;
             const newSub = await subscriptionService.createSubscription(formData, token);
-            setSubscriptions([...subscriptions, newSub]); // This triggers the useEffect above
+            setSubscriptions([...subscriptions, newSub]);
+            const summary = await analyticsService.getAnalyticsSummary(token);
+            setAnalyticsSummary(summary);
             toast.success('Subscription Added!');
             setShowForm(false);
         } catch (error) {
@@ -123,6 +136,8 @@ const Dashboard = () => {
                 const token = storedUser.token;
                 await subscriptionService.deleteSubscription(id, token);
                 setSubscriptions(subscriptions.filter((sub) => sub._id !== id));
+                const summary = await analyticsService.getAnalyticsSummary(token);
+                setAnalyticsSummary(summary);
                 toast.success('Subscription Deleted');
             } catch (error) {
                 toast.error('Error deleting subscription');
@@ -147,6 +162,9 @@ const Dashboard = () => {
             const updatedSub = await subscriptionService.updateSubscription(currentSubscription._id, formData, token);
 
             setSubscriptions(subscriptions.map(sub => (sub._id === currentSubscription._id ? updatedSub : sub)));
+
+            const summary = await analyticsService.getAnalyticsSummary(token);
+            setAnalyticsSummary(summary);
 
             setIsEditing(false);
             setCurrentSubscription(null);
@@ -203,30 +221,6 @@ const Dashboard = () => {
     };
 
     const expiringSoon = getExpiringSoon();
-
-    // Calculate summary metrics
-    const calculateSummaryMetrics = () => {
-        const activeSubscriptions = subscriptions.filter(sub => sub.status === 'Active');
-        let monthlyTotal = 0;
-
-        activeSubscriptions.forEach(sub => {
-            if (sub.billingCycle === 'Monthly') {
-                monthlyTotal += sub.cost;
-            } else if (sub.billingCycle === 'Yearly') {
-                monthlyTotal += sub.cost / 12;
-            } else if (sub.billingCycle === 'Weekly') {
-                monthlyTotal += sub.cost * 4;
-            }
-        });
-
-        return {
-            activeCount: activeSubscriptions.length,
-            monthlyTotal: monthlyTotal.toFixed(2),
-            expiringCount: expiringSoon.length
-        };
-    };
-
-    const summaryMetrics = calculateSummaryMetrics();
 
     if (isLoading) {
         return <Spinner />;
@@ -333,8 +327,8 @@ const Dashboard = () => {
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
                             <FaCheckCircle style={{ fontSize: '32px', color: '#667eea' }} />
                         </div>
-                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Active Subscriptions</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#667eea', margin: 0 }}>{summaryMetrics.activeCount}</p>
+                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Active</h3>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#667eea', margin: 0 }}>{analyticsSummary.activeCount}</p>
                     </div>
                     <div style={{
                         background: 'linear-gradient(135deg, rgba(67, 233, 123, 0.2) 0%, rgba(56, 239, 125, 0.2) 100%)',
@@ -348,7 +342,10 @@ const Dashboard = () => {
                             <FaWallet style={{ fontSize: '32px', color: '#43e97b' }} />
                         </div>
                         <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Monthly Cost</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#43e97b', margin: 0 }}>₹{summaryMetrics.monthlyTotal}</p>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#43e97b', margin: '0 0 5px 0' }}>₹{analyticsSummary.monthlyTotal}</p>
+                        <span style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.6)', fontStyle: 'italic' }}>
+                            Current Month Active Subscriptions Only
+                        </span>
                     </div>
                     <div style={{
                         background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 193, 7, 0.2) 100%)',
@@ -361,8 +358,18 @@ const Dashboard = () => {
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
                             <FaBell style={{ fontSize: '32px', color: '#ff9800' }} />
                         </div>
-                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Expiring Soon</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{summaryMetrics.expiringCount}</p>
+                        <h3 style={{ fontSize: '14px', marginBottom: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>Upcoming / Expired</h3>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', alignItems: 'center' }}>
+                            <div>
+                                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{analyticsSummary.upcomingCount}</p>
+                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Upcoming</p>
+                            </div>
+                            <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.2)' }}></div>
+                            <div>
+                                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff6b6b', margin: 0 }}>{analyticsSummary.expiredCount}</p>
+                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Expired</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
