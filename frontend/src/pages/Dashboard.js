@@ -1,3 +1,24 @@
+import React, { useEffect, useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
+import subscriptionService from '../services/subscriptionService';
+import analyticsService from '../services/analyticsService';
+import { toast } from 'react-toastify';
+import Spinner from '../components/Spinner';
+import {
+    FaChartLine,
+    FaFileAlt,
+    FaUserCircle,
+    FaBell,
+    FaCheckCircle,
+    FaWallet,
+    FaSearch,
+    FaFilter,
+    FaSort,
+    FaPlus
+} from 'react-icons/fa';
+import SubscriptionForm from '../components/SubscriptionForm';
+import SubscriptionItem from '../components/SubscriptionItem';
 import AddPaymentModal from '../components/AddPaymentModal';
 
 const Dashboard = () => {
@@ -219,6 +240,13 @@ const Dashboard = () => {
         'AI Tools',
         'Other'
     ];
+
+    const upcomingPayments = subscriptions.map(sub => {
+        const nextDue = new Date(sub.nextRenewalDate);
+        const diffTime = nextDue - new Date();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return { ...sub, daysUntilRenewal: diffDays };
+    }).filter(sub => sub.status === 'Upcoming' || (sub.daysUntilRenewal >= 0 && sub.daysUntilRenewal <= 7));
 
     const expiringSoon = upcomingPayments;
 
@@ -459,7 +487,7 @@ const Dashboard = () => {
                         </h2>
                         <div className="subscriptions">
                             {expiringSoon.map((sub) => (
-                                <SubscriptionItem key={sub._id} subscription={sub} onDelete={deleteSubscription} onEdit={startEdit} onPay={handlePay} />
+                                <SubscriptionItem key={sub._id} subscription={sub} onDelete={deleteSubscription} onEdit={startEdit} onPay={() => handlePayClick(sub)} />
                             ))}
                         </div>
                     </section>
