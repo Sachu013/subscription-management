@@ -41,36 +41,39 @@ const Profile = () => {
 
     return (
         <section className="dashboard">
-            <header className="header-responsive">
+            <header>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <button
                         onClick={() => navigate('/')}
                         className="btn"
                         style={{
                             borderRadius: '50%',
-                            width: '44px',
-                            height: '44px',
+                            padding: '10px',
                             background: 'var(--background)',
                             color: 'var(--text-primary)',
                             border: '1px solid var(--border-color)',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            minWidth: '44px'
                         }}
                     >
                         <FaArrowLeft />
                     </button>
-                    <h1 style={{ margin: 0, fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', color: 'var(--primary)' }}>Profile</h1>
+                    <h1 style={{ margin: 0, fontSize: '1.2rem' }}>Profile</h1>
                 </div>
-                <button onClick={logout} className="btn nav-desktop">Logout</button>
+                <button onClick={logout} className="btn" style={{ padding: '8px 15px', fontSize: '13px' }}>Logout</button>
             </header>
 
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(280px, 100%, 400px), 1fr))',
+                gridTemplateColumns: '1fr',
                 gap: '20px',
-                marginBottom: '30px'
+                marginBottom: '30px',
+                maxWidth: '900px',
+                margin: '0 auto'
             }}>
+                {window.innerWidth > 768 && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}></div>}
                 {/* User Information Card */}
                 <div style={{
                     background: 'var(--card-bg)',
@@ -128,11 +131,12 @@ const Profile = () => {
                     <div style={{
                         marginTop: '30px',
                         padding: '15px',
-                        background: 'var(--background)',
+                        background: 'var(--secondary)',
                         borderRadius: '12px',
                         border: '1px solid var(--border-color)',
+                        opacity: 0.8
                     }}>
-                        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, textAlign: 'center' }}>
+                        <p style={{ fontSize: '13px', color: '#2c2c2c', margin: 0, textAlign: 'center' }}>
                             💡 Account details are managed via your provider.
                         </p>
                     </div>
@@ -185,6 +189,10 @@ const Profile = () => {
                         onClick={handleSaveSettings}
                         className="btn btn-block"
                         style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px',
                             marginTop: '30px'
                         }}
                     >

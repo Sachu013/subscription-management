@@ -118,15 +118,21 @@ const Reports = () => {
 
     return (
         <section className="dashboard">
-            <header className="header-responsive">
+            <header style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: '1px solid var(--border-color)',
+                paddingBottom: '20px',
+                marginBottom: '30px'
+            }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <button
                         onClick={() => navigate('/')}
                         className="btn"
                         style={{
                             borderRadius: '50%',
-                            width: '44px',
-                            height: '44px',
+                            padding: '10px',
                             background: 'var(--background)',
                             color: 'var(--text-primary)',
                             border: '1px solid var(--border-color)',
@@ -137,9 +143,11 @@ const Reports = () => {
                     >
                         <FaArrowLeft />
                     </button>
-                    <h1 style={{ margin: 0, fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', color: 'var(--primary)' }}>Reports</h1>
+                    <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--primary)' }}>Subscription Report</h1>
                 </div>
-                <button onClick={logout} className="btn nav-desktop">Logout</button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={logout} className="btn">Logout</button>
+                </div>
             </header>
 
             <FilterBar
@@ -239,9 +247,9 @@ const Reports = () => {
                         border: '1px solid var(--border-color)',
                         boxShadow: 'var(--shadow)'
                     }}>
-                        <table className="responsive-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                             <thead>
-                                <tr style={{ background: 'var(--background)', color: 'var(--text-primary)' }}>
+                                <tr style={{ background: 'var(--secondary)', color: '#2c2c2c' }}>
                                     <th style={{ padding: '15px' }}>Name</th>
                                     <th style={{ padding: '15px' }}>Category</th>
                                     <th style={{ padding: '15px' }}>Price</th>
@@ -251,11 +259,11 @@ const Reports = () => {
                             </thead>
                             <tbody>
                                 {subscriptions.map(sub => (
-                                    <tr key={sub._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                        <td style={{ padding: '15px' }} data-label="Name">{sub.name}</td>
-                                        <td style={{ padding: '15px' }} data-label="Category">{sub.category}</td>
-                                        <td style={{ padding: '15px' }} data-label="Price">₹{sub.price}</td>
-                                        <td style={{ padding: '15px' }} data-label="Status">
+                                    <tr key={sub._id}>
+                                        <td data-label="Name" style={{ padding: '15px' }}>{sub.name}</td>
+                                        <td data-label="Category" style={{ padding: '15px' }}>{sub.category}</td>
+                                        <td data-label="Price" style={{ padding: '15px' }}>₹{sub.price}</td>
+                                        <td data-label="Status" style={{ padding: '15px' }}>
                                             <span style={{
                                                 padding: '4px 10px',
                                                 borderRadius: '12px',
@@ -268,7 +276,7 @@ const Reports = () => {
                                                 {sub.status}
                                             </span>
                                         </td>
-                                        <td style={{ padding: '15px', fontWeight: 'bold' }} data-label="Total Spent">₹{sub.totalSpent}</td>
+                                        <td data-label="Total Spent" style={{ padding: '15px', fontWeight: 'bold' }}>₹{sub.totalSpent}</td>
                                     </tr>
                                 ))}
                             </tbody>

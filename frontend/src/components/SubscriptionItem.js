@@ -103,52 +103,57 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay, onPause }) =>
                 </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexWrap: 'wrap' }}>
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(var(--btn-cols, 3), 1fr)',
+                gap: '8px',
+                marginTop: 'auto',
+                '--btn-cols': window.innerWidth < 450 ? 1 : 3
+            }}>
                 <button
                     onClick={() => onPay(subscription._id)}
                     className="btn"
                     style={{
-                        width: '100%',
+                        gridColumn: '1 / -1',
+                        padding: '12px',
                         marginBottom: '4px'
                     }}
                 >
                     Add Payment
                 </button>
-                <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-                    <button
-                        onClick={() => onPause(subscription)}
-                        className="btn btn-secondary"
-                        style={{
-                            flex: 1,
-                            fontSize: '13px'
-                        }}
-                    >
-                        {subscription.status === 'Paused' ? 'Resume' : 'Pause'}
-                    </button>
-                    <button
-                        onClick={() => onEdit(subscription)}
-                        className="btn"
-                        style={{
-                            flex: 1,
-                            fontSize: '13px',
-                            background: 'var(--background)',
-                            color: 'var(--text-primary)',
-                            border: '1px solid var(--border-color)'
-                        }}
-                    >
-                        Edit
-                    </button>
-                    <button
-                        onClick={() => onDelete(subscription._id)}
-                        className="btn btn-danger"
-                        style={{
-                            flex: 1,
-                            fontSize: '13px'
-                        }}
-                    >
-                        Delete
-                    </button>
-                </div>
+                <button
+                    onClick={() => onPause(subscription)}
+                    className="btn btn-secondary"
+                    style={{
+                        padding: '10px',
+                        fontSize: '13px'
+                    }}
+                >
+                    {subscription.status === 'Paused' ? 'Resume' : 'Pause'}
+                </button>
+                <button
+                    onClick={() => onEdit(subscription)}
+                    className="btn"
+                    style={{
+                        padding: '10px',
+                        fontSize: '13px',
+                        background: 'var(--background)',
+                        color: 'var(--text-primary)',
+                        border: '1px solid var(--border-color)'
+                    }}
+                >
+                    Edit
+                </button>
+                <button
+                    onClick={() => onDelete(subscription._id)}
+                    className="btn btn-danger"
+                    style={{
+                        padding: '10px',
+                        fontSize: '13px'
+                    }}
+                >
+                    Delete
+                </button>
             </div>
         </div>
     );

@@ -76,8 +76,7 @@ const Analytics = () => {
     }, [user, navigate, globalStatus, globalCategory, breakdownFilter, topSubFilter]);
 
     // Use theme-aware colors for charts
-    // Use theme-aware colors for charts
-    const COLORS = ['#AD7D56', '#CDB49E', '#AD7D56', '#CDB49E', '#AD7D56', '#CDB49E', '#AD7D56', '#CDB49E'];
+    const COLORS = ['#789A99', '#FFD2C2', '#9eb5b4', '#f7c0af', '#b8c9c8', '#ffe1d6', '#cbd7d6', '#fff1ec'];
 
     if (isLoading) {
         return <Spinner />;
@@ -85,32 +84,32 @@ const Analytics = () => {
 
     return (
         <section className="dashboard">
-            <header className="header-responsive">
+            <header>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <button
                         onClick={() => navigate('/')}
                         className="btn"
                         style={{
                             borderRadius: '50%',
-                            width: '44px',
-                            height: '44px',
+                            padding: '10px',
                             background: 'var(--background)',
                             color: 'var(--text-primary)',
                             border: '1px solid var(--border-color)',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            minWidth: '44px'
                         }}
                     >
                         <FaArrowLeft />
                     </button>
-                    <h1 style={{ margin: 0, fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', color: 'var(--primary)' }}>Analytics</h1>
+                    <h1 style={{ margin: 0 }}>Analytics</h1>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={() => navigate('/category-comparison')} className="btn btn-secondary nav-desktop" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FaChartBar /> Comparison
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button onClick={() => navigate('/category-comparison')} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 15px', fontSize: '13px' }}>
+                        <FaChartBar /> <span style={{ display: window.innerWidth > 640 ? 'inline' : 'none' }}>Comparison</span>
                     </button>
-                    <button onClick={logout} className="btn nav-desktop">Logout</button>
+                    <button onClick={logout} className="btn" style={{ padding: '8px 15px', fontSize: '13px' }}>Logout</button>
                 </div>
             </header>
 
@@ -151,7 +150,7 @@ const Analytics = () => {
                     boxShadow: 'var(--shadow)'
                 }}>
                     <h3 style={{ fontSize: '14px', marginBottom: '10px', color: 'var(--text-secondary)' }}>Current Month</h3>
-                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>₹{metrics?.monthlyTotal || 0}</p>
+                    <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#789A99', margin: 0 }}>₹{metrics?.monthlyTotal || 0}</p>
                 </div>
                 <div style={{
                     background: 'var(--card-bg)',
@@ -166,58 +165,64 @@ const Analytics = () => {
                 </div>
             </div>
 
-            {/* Monthly Trend Chart */}
-            <div style={{
-                background: 'var(--card-bg)',
-                padding: '30px',
-                borderRadius: '16px',
-                border: '1px solid var(--border-color)',
-                marginBottom: '30px',
-                boxShadow: 'var(--shadow)'
-            }}>
-                <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px', fontSize: '20px', color: 'var(--primary)' }}>
-                    <FaChartLine /> Monthly Spending Trend
-                </h2>
-                {monthlyTrend.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={monthlyTrend}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-                            <XAxis dataKey="month" stroke="var(--text-secondary)" fontSize={12} tickMargin={10} />
-                            <YAxis stroke="var(--text-secondary)" fontSize={12} />
-                            <Tooltip
-                                contentStyle={{
-                                    background: 'var(--card-bg)',
-                                    border: '1px solid var(--border-color)',
-                                    borderRadius: '12px',
-                                    color: 'var(--text-primary)'
-                                }}
-                            />
-                            <Legend />
-                            <Line type="smooth" dataKey="amount" stroke="var(--primary)" strokeWidth={3} name="Spending (₹)" dot={{ fill: 'var(--primary)', r: 4 }} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                ) : (
-                    <div style={{ textAlign: 'center', padding: '40px', opacity: 0.6 }}>No trend data available</div>
-                )}
-            </div>
-
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(280px, 100%, 400px), 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(280px, 100%, 600px), 1fr))',
                 gap: '20px',
                 marginBottom: '30px'
             }}>
+                {/* Monthly Trend Chart */}
+                <div style={{
+                    background: 'var(--card-bg)',
+                    padding: '20px',
+                    borderRadius: '16px',
+                    border: '1px solid var(--border-color)',
+                    boxShadow: 'var(--shadow)',
+                    minHeight: '400px',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}>
+                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px', fontSize: '1.1rem', color: 'var(--primary)' }}>
+                        <FaChartLine /> Spending Trend
+                    </h2>
+                    {monthlyTrend.length > 0 ? (
+                        <div style={{ flex: 1, width: '101%', marginLeft: '-0.5%' }}>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <LineChart data={monthlyTrend}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                                    <XAxis dataKey="month" stroke="var(--text-secondary)" fontSize={11} tickMargin={10} hide={window.innerWidth < 450} />
+                                    <YAxis stroke="var(--text-secondary)" fontSize={11} width={40} />
+                                    <Tooltip
+                                        contentStyle={{
+                                            background: 'var(--card-bg)',
+                                            border: '1px solid var(--border-color)',
+                                            borderRadius: '12px',
+                                            color: 'var(--text-primary)'
+                                        }}
+                                    />
+                                    <Legend iconType="circle" />
+                                    <Line type="monotone" dataKey="amount" stroke="var(--primary)" strokeWidth={3} name="Total (₹)" dot={{ fill: 'var(--primary)', r: 4 }} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '40px', opacity: 0.6 }}>No data</div>
+                    )}
+                </div>
                 {/* Category Pie Chart */}
                 <div style={{
                     background: 'var(--card-bg)',
-                    padding: '30px',
+                    padding: '20px',
                     borderRadius: '16px',
                     border: '1px solid var(--border-color)',
-                    boxShadow: 'var(--shadow)'
+                    boxShadow: 'var(--shadow)',
+                    minHeight: '400px',
+                    display: 'flex',
+                    flexDirection: 'column'
                 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', margin: 0, color: 'var(--primary)' }}>
-                            <FaChartPie /> Category Breakdown
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.1rem', margin: 0, color: 'var(--primary)' }}>
+                            <FaChartPie /> Breakdown
                         </h2>
                         <select
                             value={breakdownFilter}
@@ -225,61 +230,64 @@ const Analytics = () => {
                             style={{
                                 background: 'var(--background)',
                                 border: '1px solid var(--border-color)',
-                                borderRadius: '8px',
+                                borderRadius: '10px',
                                 color: 'var(--text-primary)',
-                                padding: '6px 12px',
-                                fontSize: '13px'
+                                padding: '6px 10px',
+                                fontSize: '12px'
                             }}
                         >
                             <option value="all_time">All Time</option>
-                            <option value="active_only">Active Only</option>
-                            <option value="current_month">Current Month</option>
+                            <option value="active_only">Active</option>
+                            <option value="current_month">Monthly</option>
                         </select>
                     </div>
                     {categoryData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                                <Pie
-                                    data={categoryData}
-                                    cx="50%"
-                                    cy="50%"
-                                    labelLine={false}
-                                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                    outerRadius={100}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                >
-                                    {categoryData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={{
-                                        background: 'var(--card-bg)',
-                                        border: '1px solid var(--border-color)',
-                                        borderRadius: '12px'
-                                    }}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
+                        <div style={{ flex: 1 }}>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <PieChart>
+                                    <Pie
+                                        data={categoryData}
+                                        cx="50%"
+                                        cy="50%"
+                                        labelLine={false}
+                                        label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+                                        outerRadius={80}
+                                        fill="#8884d8"
+                                        dataKey="value"
+                                    >
+                                        {categoryData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{
+                                            background: 'var(--card-bg)',
+                                            border: '1px solid var(--border-color)',
+                                            borderRadius: '12px'
+                                        }}
+                                    />
+                                    <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
                     ) : (
-                        <div style={{ textAlign: 'center', padding: '40px', opacity: 0.6 }}>No category data available</div>
+                        <div style={{ textAlign: 'center', padding: '40px', opacity: 0.6 }}>No data</div>
                     )}
                 </div>
 
                 {/* Top 5 Subscriptions */}
                 <div style={{
                     background: 'var(--card-bg)',
-                    padding: '30px',
+                    padding: '20px',
                     borderRadius: '16px',
                     border: '1px solid var(--border-color)',
                     boxShadow: 'var(--shadow)'
                 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', margin: 0, color: 'var(--primary)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.1rem', margin: 0, color: 'var(--primary)' }}>
                             <FaTrophy /> Top 5
                         </h2>
-                        <div style={{ display: 'flex', background: 'var(--background)', borderRadius: '10px', padding: '3px', border: '1px solid var(--border-color)' }}>
+                        <div style={{ display: 'flex', background: 'var(--background)', borderRadius: '10px', padding: '3px', border: '1px solid var(--border-color)', overflowX: 'auto', maxWidth: '100%' }}>
                             {['allTime', 'activeOnly', 'expiredOnly'].map(filter => (
                                 <button
                                     key={filter}
@@ -287,15 +295,16 @@ const Analytics = () => {
                                     style={{
                                         border: 'none',
                                         borderRadius: '8px',
-                                        padding: '6px 12px',
-                                        fontSize: '11px',
+                                        padding: '5px 10px',
+                                        fontSize: '10px',
                                         cursor: 'pointer',
+                                        whiteSpace: 'nowrap',
                                         background: topSubFilter === filter ? 'var(--primary)' : 'transparent',
                                         color: topSubFilter === filter ? '#fff' : 'var(--text-secondary)',
                                         transition: 'var(--transition)'
                                     }}
                                 >
-                                    {filter === 'allTime' ? 'All Time' : filter === 'activeOnly' ? 'Active' : 'Expired'}
+                                    {filter === 'allTime' ? 'All' : filter === 'activeOnly' ? 'Active' : 'Expired'}
                                 </button>
                             ))}
                         </div>

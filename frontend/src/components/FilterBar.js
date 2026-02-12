@@ -157,12 +157,12 @@ const FilterBar = ({
                     borderTop: '1px solid var(--border-color)'
                 }}>
                     {/* Price Range */}
-                    <div style={{ flex: 1, minWidth: '240px' }}>
+                    <div style={{ flex: '1 1 100%', minWidth: '100%' }}>
                         <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>
                             Price Range (₹)
                         </label>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ position: 'relative', flex: 1 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ position: 'relative' }}>
                                 <span style={{ position: 'absolute', top: '11px', left: '10px', color: 'var(--text-secondary)', fontSize: '11px', opacity: 0.6 }}>Min</span>
                                 <input
                                     type="number"
@@ -205,14 +205,20 @@ const FilterBar = ({
                     {/* Reset Button */}
                     <button
                         onClick={onReset}
-                        className="btn btn-secondary"
+                        className="btn"
                         style={{
                             display: 'flex',
                             alignItems: 'center',
+                            justifyContent: 'center',
                             gap: '8px',
+                            background: 'var(--background)',
+                            border: '1px solid var(--border-color)',
+                            color: 'var(--text-primary)',
                             height: '42px',
                             padding: '0 20px',
-                            fontSize: '14px'
+                            fontSize: '14px',
+                            flex: '1 1 100%',
+                            minHeight: '44px'
                         }}
                     >
                         <FaTimes /> Reset

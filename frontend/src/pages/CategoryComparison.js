@@ -69,32 +69,32 @@ const CategoryComparison = () => {
         }
     }, [selectedCategory, fetchComparisonData]);
 
-    const COLORS = ['#AD7D56', '#CDB49E', '#AD7D56', '#CDB49E', '#AD7D56', '#CDB49E', '#AD7D56', '#CDB49E'];
+    const COLORS = ['#789A99', '#FFD2C2', '#9eb5b4', '#f7c0af', '#b8c9c8', '#ffe1d6', '#cbd7d6', '#fff1ec'];
 
     return (
         <section className="dashboard">
-            <header className="header-responsive">
+            <header>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <button
                         onClick={() => navigate('/analytics')}
                         className="btn"
                         style={{
                             borderRadius: '50%',
-                            width: '44px',
-                            height: '44px',
+                            padding: '10px',
                             background: 'var(--background)',
                             color: 'var(--text-primary)',
                             border: '1px solid var(--border-color)',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            minWidth: '44px'
                         }}
                     >
                         <FaArrowLeft />
                     </button>
-                    <h1 style={{ margin: 0, fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', color: 'var(--primary)' }}>Comparison</h1>
+                    <h1 style={{ margin: 0, fontSize: '1.2rem' }}>Comparison</h1>
                 </div>
-                <button onClick={logout} className="btn nav-desktop">Logout</button>
+                <button onClick={logout} className="btn" style={{ padding: '8px 15px', fontSize: '13px' }}>Logout</button>
             </header>
 
             {/* Category Selector */}
@@ -168,16 +168,16 @@ const CategoryComparison = () => {
                             {/* Comparison Table */}
                             <div style={{
                                 background: 'var(--card-bg)',
-                                padding: '25px',
+                                padding: '20px',
                                 borderRadius: '16px',
                                 border: '1px solid var(--border-color)',
                                 boxShadow: 'var(--shadow)'
                             }}>
-                                <h2 style={{ marginBottom: '25px', fontSize: '1.1rem', color: 'var(--primary)' }}>Breakdown</h2>
-                                <div style={{ overflowX: 'auto' }}>
+                                <h2 style={{ marginBottom: '20px', fontSize: '1.1rem', color: 'var(--primary)' }}>Breakdown</h2>
+                                <div className="report-content">
                                     <table className="responsive-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                         <thead>
-                                            <tr style={{ background: 'var(--background)', color: 'var(--text-primary)' }}>
+                                            <tr style={{ background: 'var(--secondary)', color: '#2c2c2c' }}>
                                                 <th style={{ padding: '15px' }}>Rank</th>
                                                 <th style={{ padding: '15px' }}>Subscription</th>
                                                 <th style={{ padding: '15px' }}>Billing Cycle</th>
@@ -187,8 +187,8 @@ const CategoryComparison = () => {
                                         </thead>
                                         <tbody>
                                             {comparisonData.map((sub, index) => (
-                                                <tr key={sub._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                                    <td style={{ padding: '15px' }} data-label="Rank">
+                                                <tr key={sub._id}>
+                                                    <td data-label="Rank" style={{ padding: '15px' }}>
                                                         <div style={{
                                                             width: '30px',
                                                             height: '30px',
@@ -199,16 +199,15 @@ const CategoryComparison = () => {
                                                             justifyContent: 'center',
                                                             fontSize: '13px',
                                                             fontWeight: 'bold',
-                                                            color: '#fff',
-                                                            marginLeft: 'auto'
+                                                            color: '#fff'
                                                         }}>
                                                             {index + 1}
                                                         </div>
                                                     </td>
-                                                    <td style={{ padding: '15px', fontWeight: 'bold' }} data-label="Subscription">{sub.name}</td>
-                                                    <td style={{ padding: '15px', color: 'var(--text-secondary)' }} data-label="Cycle">{sub.billingCycle}</td>
-                                                    <td style={{ padding: '15px', textAlign: 'right', color: 'var(--text-secondary)' }} data-label="Price">₹{sub.price}</td>
-                                                    <td style={{ padding: '15px', textAlign: 'right', fontWeight: 'bold', color: 'var(--primary)' }} data-label="Monthly">₹{sub.monthlyCost}</td>
+                                                    <td data-label="Subscription" style={{ padding: '15px', fontWeight: 'bold' }}>{sub.name}</td>
+                                                    <td data-label="Billing Cycle" style={{ padding: '15px', color: 'var(--text-secondary)' }}>{sub.billingCycle}</td>
+                                                    <td data-label="Price" style={{ padding: '15px', textAlign: 'right', color: 'var(--text-secondary)' }}>₹{sub.price}</td>
+                                                    <td data-label="Monthly" style={{ padding: '15px', textAlign: 'right', fontWeight: 'bold', color: 'var(--primary)' }}>₹{sub.monthlyCost}</td>
                                                 </tr>
                                             ))}
                                         </tbody>

@@ -62,7 +62,7 @@ const Dashboard = () => {
     const [currentSubscription, setCurrentSubscription] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [budgetData, setBudgetData] = useState({
         budget: { monthlyLimit: 0 },
         monthlySpending: 0,
@@ -315,221 +315,157 @@ const Dashboard = () => {
     return (
         <section className="dashboard">
             <header>
-                <div>
-                    <h1 style={{ fontSize: 'clamp(1.2rem, 5vw, 1.6rem)' }}>Welcome, {user && user.username}</h1>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Overview</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <button
+                        className="mobile-nav-toggle"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Toggle Menu"
+                    >
+                        {isMenuOpen ? <FaTimes /> : <FaBars />}
+                    </button>
+                    <div>
+                        <h1 style={{ fontSize: '1.4rem', margin: 0 }}>Welcome, {user && user.username}</h1>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0, display: window.innerWidth > 640 ? 'block' : 'none' }}>Here's your subscription overview</p>
+                    </div>
                 </div>
 
-                {/* Desktop Navigation */}
-                <div className="nav-desktop" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <button
-                        onClick={toggleTheme}
-                        className="btn"
-                        style={{
-                            background: 'var(--background)',
-                            color: 'var(--primary)',
-                            borderRadius: '50%',
-                            padding: '12px',
-                            border: '1px solid var(--border-color)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: 'none',
-                            width: '44px',
-                            height: '44px'
-                        }}
-                        title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-                    >
-                        {theme === 'light' ? <FaMoon /> : <FaSun />}
-                    </button>
-                    <button onClick={() => navigate('/analytics')} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FaChartLine /> Analytics
-                    </button>
-                    <button onClick={() => navigate('/calendar')} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FaCalendarAlt /> Calendar
-                    </button>
-                    <button onClick={() => navigate('/reports')} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FaFileAlt /> Reports
-                    </button>
+                <div className={`nav-overlay ${isMenuOpen ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}></div>
 
-                    <div style={{ position: 'relative' }}>
+                <div className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
                         <button
-                            onClick={() => setShowNotifications(!showNotifications)}
+                            onClick={() => { toggleTheme(); setIsMenuOpen(false); }}
                             className="btn"
                             style={{
+                                background: 'var(--background)',
+                                color: 'var(--primary)',
+                                borderRadius: '12px',
+                                padding: '12px',
+                                border: '1px solid var(--border-color)',
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: '12px',
-                                borderRadius: '50%',
-                                background: 'var(--background)',
-                                border: '1px solid var(--border-color)',
-                                position: 'relative',
-                                color: 'var(--text-primary)',
-                                width: '44px',
-                                height: '44px'
+                                justifyContent: 'center',
+                                boxShadow: 'none',
+                                minWidth: '44px'
                             }}
+                            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
                         >
-                            <FaBell />
-                            {upcomingPayments.length > 0 && (
-                                <span style={{
-                                    position: 'absolute',
-                                    top: '0',
-                                    right: '0',
-                                    background: 'var(--danger)',
-                                    color: 'white',
-                                    borderRadius: '50%',
-                                    padding: '2px 6px',
-                                    fontSize: '10px',
-                                    fontWeight: 'bold',
-                                    transform: 'translate(25%, -25%)',
-                                    border: '2px solid var(--card-bg)'
-                                }}>
-                                    {upcomingPayments.length}
-                                </span>
-                            )}
+                            {theme === 'light' ? <FaMoon /> : <FaSun />}
+                            <span style={{ display: 'none', marginLeft: '10px' }} className="mobile-only-label">Theme</span>
+                        </button>
+                        <button onClick={() => { navigate('/analytics'); setIsMenuOpen(false); }} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FaChartLine /> <span>Analytics</span>
+                        </button>
+                        <button onClick={() => { navigate('/calendar'); setIsMenuOpen(false); }} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FaCalendarAlt /> <span>Calendar</span>
+                        </button>
+                        <button onClick={() => { navigate('/reports'); setIsMenuOpen(false); }} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FaFileAlt /> <span>Reports</span>
                         </button>
 
-                        {showNotifications && (
-                            <div style={{
-                                position: 'absolute',
-                                top: '55px',
-                                right: '0',
-                                width: '300px',
-                                background: 'var(--card-bg)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: '16px',
-                                padding: '20px',
-                                zIndex: 1000,
-                                boxShadow: 'var(--shadow)',
-                                animation: 'fadeIn 0.2s ease-out'
-                            }}>
-                                <h4 style={{ margin: '0 0 15px 0', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', color: 'var(--primary)', fontSize: '1rem' }}>
-                                    Upcoming Renewals
-                                </h4>
-                                {upcomingPayments.length === 0 ? (
-                                    <p style={{ fontSize: '14px', color: 'var(--text-secondary)', textAlign: 'center', padding: '20px 0' }}>No payments due soon</p>
-                                ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
-                                        {upcomingPayments.map(sub => (
-                                            <div key={sub._id} style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center',
-                                                padding: '10px 12px',
-                                                borderRadius: '12px',
-                                                background: 'var(--background)',
-                                                border: '1px solid var(--border-color)'
-                                            }}>
-                                                <div>
-                                                    <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px' }}>{sub.name}</p>
-                                                    <p style={{ margin: 0, fontSize: '12px', color: sub.daysUntilRenewal <= 1 ? 'var(--danger)' : 'var(--text-secondary)' }}>
-                                                        {sub.daysUntilRenewal === 0 ? 'Due Today' :
-                                                            sub.daysUntilRenewal === 1 ? 'Due Tomorrow' : `In ${sub.daysUntilRenewal} days`}
-                                                    </p>
-                                                </div>
-                                                <div style={{ textAlign: 'right' }}>
-                                                    <p style={{ margin: 0, fontWeight: 'bold', color: 'var(--primary)', fontSize: '14px' }}>₹{sub.price}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                        <div style={{ position: 'relative' }}>
+                            <button
+                                onClick={() => setShowNotifications(!showNotifications)}
+                                className="btn"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    padding: '12px',
+                                    borderRadius: '50%',
+                                    background: 'var(--background)',
+                                    border: '1px solid var(--border-color)',
+                                    position: 'relative',
+                                    color: 'var(--text-primary)',
+                                    minWidth: '44px'
+                                }}
+                            >
+                                <FaBell />
+                                {upcomingPayments.length > 0 && (
+                                    <span style={{
+                                        position: 'absolute',
+                                        top: '0',
+                                        right: '0',
+                                        background: 'var(--danger)',
+                                        color: 'white',
+                                        borderRadius: '50%',
+                                        padding: '2px 6px',
+                                        fontSize: '10px',
+                                        fontWeight: 'bold',
+                                        transform: 'translate(25%, -25%)',
+                                        border: '2px solid var(--card-bg)'
+                                    }}>
+                                        {upcomingPayments.length}
+                                    </span>
                                 )}
-                            </div>
-                        )}
+                            </button>
+
+                            {showNotifications && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '55px',
+                                    right: window.innerWidth < 1024 ? 'auto' : '0',
+                                    left: window.innerWidth < 1024 ? '0' : 'auto',
+                                    width: window.innerWidth < 400 ? '280px' : '340px',
+                                    background: 'var(--card-bg)',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '16px',
+                                    padding: '20px',
+                                    zIndex: 1000,
+                                    boxShadow: 'var(--shadow)',
+                                    animation: 'fadeIn 0.2s ease-out'
+                                }}>
+                                    <h4 style={{ margin: '0 0 15px 0', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', color: 'var(--primary)', fontSize: '1rem' }}>
+                                        Upcoming Renewals
+                                    </h4>
+                                    {upcomingPayments.length === 0 ? (
+                                        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', textAlign: 'center', padding: '20px 0' }}>No payments due soon</p>
+                                    ) : (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
+                                            {upcomingPayments.map(sub => (
+                                                <div key={sub._id} style={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    padding: '10px 12px',
+                                                    borderRadius: '12px',
+                                                    background: 'var(--background)',
+                                                    border: '1px solid var(--border-color)'
+                                                }}>
+                                                    <div>
+                                                        <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px' }}>{sub.name}</p>
+                                                        <p style={{ margin: 0, fontSize: '12px', color: sub.daysUntilRenewal <= 1 ? 'var(--danger)' : 'var(--text-secondary)' }}>
+                                                            {sub.daysUntilRenewal === 0 ? 'Due Today' :
+                                                                sub.daysUntilRenewal === 1 ? 'Due Tomorrow' : `In ${sub.daysUntilRenewal} days`}
+                                                        </p>
+                                                    </div>
+                                                    <div style={{ textAlign: 'right' }}>
+                                                        <p style={{ margin: 0, fontWeight: 'bold', color: 'var(--primary)', fontSize: '14px' }}>₹{sub.price}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <button onClick={() => { navigate('/profile'); setIsMenuOpen(false); }} className="btn" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            borderRadius: '50%',
+                            padding: '12px',
+                            background: 'var(--background)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--border-color)',
+                            minWidth: '44px'
+                        }}>
+                            <FaUserCircle />
+                        </button>
+                        <button onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="btn" style={{ background: 'var(--danger)', color: '#fff' }}>Logout</button>
                     </div>
-
-                    <button onClick={() => navigate('/profile')} className="btn" style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                        borderRadius: '50%',
-                        padding: '12px',
-                        background: 'var(--background)',
-                        color: 'var(--text-primary)',
-                        border: '1px solid var(--border-color)',
-                        width: '44px',
-                        height: '44px'
-                    }}>
-                        <FaUserCircle />
-                    </button>
-                    <button onClick={handleLogout} className="btn" style={{ background: 'var(--danger)', color: '#fff' }}>Logout</button>
                 </div>
-
-                {/* Mobile Navigation Toggle */}
-                <button
-                    className="nav-mobile-toggle"
-                    onClick={() => setIsMobileMenuOpen(true)}
-                >
-                    <FaBars />
-                </button>
             </header>
-
-            {/* Mobile Nav Drawer */}
-            {isMobileMenuOpen && (
-                <div className="mobile-nav-overlay" onClick={() => setIsMobileMenuOpen(false)}>
-                    <div
-                        className={`mobile-nav-drawer ${isMobileMenuOpen ? 'open' : ''}`}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                            <h2 style={{ fontSize: '1.2rem', color: 'var(--primary)', margin: 0 }}>Menu</h2>
-                            <button
-                                className="btn"
-                                style={{ background: 'transparent', color: 'var(--text-primary)', padding: 0, width: '44px', height: '44px' }}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                                <FaTimes />
-                            </button>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <button
-                                onClick={() => { navigate('/analytics'); setIsMobileMenuOpen(false); }}
-                                className="btn btn-secondary"
-                                style={{ width: '100%', justifyContent: 'flex-start', gap: '15px' }}
-                            >
-                                <FaChartLine /> Analytics
-                            </button>
-                            <button
-                                onClick={() => { navigate('/calendar'); setIsMobileMenuOpen(false); }}
-                                className="btn btn-secondary"
-                                style={{ width: '100%', justifyContent: 'flex-start', gap: '15px' }}
-                            >
-                                <FaCalendarAlt /> Calendar
-                            </button>
-                            <button
-                                onClick={() => { navigate('/reports'); setIsMobileMenuOpen(false); }}
-                                className="btn btn-secondary"
-                                style={{ width: '100%', justifyContent: 'flex-start', gap: '15px' }}
-                            >
-                                <FaFileAlt /> Reports
-                            </button>
-                            <button
-                                onClick={() => { navigate('/profile'); setIsMobileMenuOpen(false); }}
-                                className="btn btn-secondary"
-                                style={{ width: '100%', justifyContent: 'flex-start', gap: '15px' }}
-                            >
-                                <FaUserCircle /> Profile & Settings
-                            </button>
-                            <div style={{ height: '1px', background: 'var(--border-color)', margin: '10px 0' }} />
-                            <button
-                                onClick={() => { toggleTheme(); }}
-                                className="btn btn-secondary"
-                                style={{ width: '100%', justifyContent: 'flex-start', gap: '15px' }}
-                            >
-                                {theme === 'light' ? <FaMoon /> : <FaSun />} {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-                            </button>
-                            <button
-                                onClick={handleLogout}
-                                className="btn"
-                                style={{ width: '100%', background: 'var(--danger)', color: '#fff', marginTop: '20px' }}
-                            >
-                                Logout
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Upcoming Payment Alerts */}
             {!showForm && upcomingPayments.length > 0 && (
@@ -607,7 +543,7 @@ const Dashboard = () => {
                             <FaCheckCircle style={{ fontSize: '28px', color: 'var(--primary)' }} />
                         </div>
                         <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Active</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>{analyticsSummary.activeCount}</p>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>{analyticsSummary.activeCount}</p>
                     </div>
 
                     <div style={{
@@ -622,7 +558,7 @@ const Dashboard = () => {
                             <FaWallet style={{ fontSize: '28px', color: 'var(--primary)' }} />
                         </div>
                         <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Monthly Total</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>₹{analyticsSummary.monthlyTotal}</p>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>₹{analyticsSummary.monthlyTotal}</p>
                     </div>
 
                     <div style={{
@@ -634,10 +570,10 @@ const Dashboard = () => {
                         boxShadow: 'var(--shadow)'
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
-                            <FaBell style={{ fontSize: '28px', color: 'var(--primary)' }} />
+                            <FaBell style={{ fontSize: '28px', color: '#ff9800' }} />
                         </div>
                         <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Upcoming</h3>
-                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>{analyticsSummary.upcomingCount || 0}</p>
+                        <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{analyticsSummary.upcomingCount || 0}</p>
                     </div>
 
                     <div style={{
