@@ -33,6 +33,18 @@ const subscriptionSchema = mongoose.Schema(
             default: 'Monthly',
             required: [true, 'Please add a billing cycle'],
         },
+        status: {
+            type: String,
+            enum: ['Active', 'Paused', 'Expired'],
+            default: 'Active',
+        },
+        reminderDays: {
+            type: Number,
+            default: 3,
+        },
+        lastReminderSent: {
+            type: Date,
+        },
         payments: [
             {
                 paidOn: {

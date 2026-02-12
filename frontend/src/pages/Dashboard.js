@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import subscriptionService from '../services/subscriptionService';
 import analyticsService from '../services/analyticsService';
+import budgetService from '../services/budgetService';
 import { toast } from 'react-toastify';
 import Spinner from '../components/Spinner';
 import {
@@ -55,6 +56,12 @@ const Dashboard = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [currentSubscription, setCurrentSubscription] = useState(null);
     const [showForm, setShowForm] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [budgetData, setBudgetData] = useState({
+        budget: { monthlyLimit: 0 },
+        monthlySpending: 0,
+        categorySpending: {}
+    });
 
     useEffect(() => {
         if (!user) {
@@ -75,14 +82,16 @@ const Dashboard = () => {
                             maxPrice: maxPrice
                         };
 
-                        const [subs, summary] = await Promise.all([
+                        const [subs, summary, budget] = await Promise.all([
                             subscriptionService.getSubscriptions(token, params),
-                            analyticsService.getAnalyticsSummary(token, params)
+                            analyticsService.getAnalyticsSummary(token, params),
+                            budgetService.getBudget(token)
                         ]);
 
                         setSubscriptions(subs);
                         setFilteredSubscriptions(subs);
                         setAnalyticsSummary(summary);
+                        setBudgetData(budget);
                     }
                 } catch (error) {
                     const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
@@ -94,6 +103,17 @@ const Dashboard = () => {
             fetchDashboardData();
         }
     }, [user, navigate, debouncedSearch, filterStatus, filterCategory, billingCycle, minPrice, maxPrice]);
+
+    const handleBudgetUpdate = async (newLimit) => {
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            const updated = await budgetService.updateBudget({ monthlyLimit: Number(newLimit) }, storedUser.token);
+            setBudgetData({ ...budgetData, budget: updated });
+            toast.success('Budget Updated');
+        } catch (error) {
+            toast.error('Failed to update budget');
+        }
+    };
 
     // Handle Sort (Backend handles filtering, Frontend handles sorting for responsiveness)
     useEffect(() => {
@@ -143,6 +163,27 @@ const Dashboard = () => {
             toast.success('Payment added successfully!');
         } catch (error) {
             toast.error('Error adding payment');
+        }
+    };
+
+    const togglePauseSubscription = async (subscription) => {
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            const token = storedUser.token;
+            const newStatus = subscription.status === 'Paused' ? 'Active' : 'Paused';
+
+            // On resume: Recalculate next renewal from today (set start date to today)
+            const updateData = { status: newStatus };
+            if (newStatus === 'Active') {
+                updateData.startDate = new Date();
+            }
+
+            const updatedSub = await subscriptionService.updateSubscription(subscription._id, updateData, token);
+            setSubscriptions(subscriptions.map(sub => (sub._id === subscription._id ? updatedSub : sub)));
+
+            toast.success(`Subscription ${newStatus === 'Paused' ? 'Paused' : 'Resumed'}`);
+        } catch (error) {
+            toast.error('Error updating status');
         }
     };
 
@@ -270,15 +311,101 @@ const Dashboard = () => {
         <section className="dashboard">
             <header>
                 <h1>Welcome {user && user.username}</h1>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                     <button onClick={() => navigate('/analytics')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                         <FaChartLine /> Analytics
+                    </button>
+                    <button onClick={() => navigate('/calendar')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <FaFileAlt /> Calendar
                     </button>
                     <button onClick={() => navigate('/reports')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                         <FaFileAlt /> Reports
                     </button>
-                    <button onClick={() => navigate('/profile')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <FaUserCircle /> Profile
+
+                    <div style={{ position: 'relative' }}>
+                        <button
+                            onClick={() => setShowNotifications(!showNotifications)}
+                            className="btn"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '10px',
+                                borderRadius: '50%',
+                                background: showNotifications ? 'rgba(67, 233, 123, 0.2)' : 'rgba(255,255,255,0.05)',
+                                position: 'relative'
+                            }}
+                        >
+                            <FaBell />
+                            {upcomingPayments.length > 0 && (
+                                <span style={{
+                                    position: 'absolute',
+                                    top: '0',
+                                    right: '0',
+                                    background: '#ff4d4d',
+                                    color: 'white',
+                                    borderRadius: '50%',
+                                    padding: '2px 5px',
+                                    fontSize: '9px',
+                                    fontWeight: 'bold',
+                                    transform: 'translate(25%, -25%)'
+                                }}>
+                                    {upcomingPayments.length}
+                                </span>
+                            )}
+                        </button>
+
+                        {showNotifications && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '50px',
+                                right: '0',
+                                width: '320px',
+                                background: '#1a1a1a',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '12px',
+                                padding: '15px',
+                                zIndex: 1000,
+                                boxShadow: '0 10px 40px rgba(0,0,0,0.6)',
+                                animation: 'fadeIn 0.2s ease-out'
+                            }}>
+                                <h4 style={{ margin: '0 0 15px 0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', color: '#43e97b' }}>
+                                    Upcoming Renewals
+                                </h4>
+                                {upcomingPayments.length === 0 ? (
+                                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: '10px 0' }}>No payments due in next 7 days</p>
+                                ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
+                                        {upcomingPayments.map(sub => (
+                                            <div key={sub._id} style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                padding: '8px',
+                                                borderRadius: '8px',
+                                                background: 'rgba(255,255,255,0.02)'
+                                            }}>
+                                                <div>
+                                                    <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px' }}>{sub.name}</p>
+                                                    <p style={{ margin: 0, fontSize: '11px', color: sub.daysUntilRenewal <= 1 ? '#ff4d4d' : '#ff9800' }}>
+                                                        {sub.daysUntilRenewal < 0 ? `Overdue by ${Math.abs(sub.daysUntilRenewal)}d` :
+                                                            sub.daysUntilRenewal === 0 ? 'Due Today' :
+                                                                sub.daysUntilRenewal === 1 ? 'Due Tomorrow' : `In ${sub.daysUntilRenewal} days`}
+                                                    </p>
+                                                </div>
+                                                <div style={{ textAlign: 'right' }}>
+                                                    <p style={{ margin: 0, fontWeight: 'bold', color: '#43e97b' }}>₹{sub.price}</p>
+                                                    <p style={{ margin: 0, fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>{sub.category}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <button onClick={() => navigate('/profile')} className="btn" style={{ display: 'flex', alignItems: 'center', gap: '5px', borderRadius: '50%', padding: '10px' }}>
+                        <FaUserCircle />
                     </button>
                     <button onClick={handleLogout} className="btn">Logout</button>
                 </div>
@@ -435,6 +562,66 @@ const Dashboard = () => {
                     </div>
                 </div>
             )}
+            {/* Budget Tracker */}
+            {!showForm && (
+                <div style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    padding: '25px',
+                    borderRadius: '15px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    marginBottom: '30px'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h2 style={{ fontSize: '20px', color: '#43e97b', margin: 0 }}>Monthly Budget Tracker</h2>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <label style={{ fontSize: '14px', opacity: 0.8 }}>Limit: ₹</label>
+                            <input
+                                type="number"
+                                defaultValue={budgetData.budget?.monthlyLimit || 0}
+                                onBlur={(e) => handleBudgetUpdate(e.target.value)}
+                                style={{
+                                    background: 'rgba(0,0,0,0.3)',
+                                    border: '1px solid rgba(67, 233, 123, 0.3)',
+                                    color: '#fff',
+                                    padding: '5px 10px',
+                                    borderRadius: '5px',
+                                    width: '100px'
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    {budgetData.budget?.monthlyLimit > 0 ? (
+                        <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                <span style={{ fontSize: '14px' }}>Utilization: {budgetData.budget.monthlyLimit > 0 ? ((budgetData.monthlySpending / budgetData.budget.monthlyLimit) * 100).toFixed(1) : 0}%</span>
+                                <span style={{ fontSize: '14px' }}>₹{budgetData.monthlySpending.toFixed(2)} / ₹{budgetData.budget.monthlyLimit}</span>
+                            </div>
+                            <div style={{
+                                width: '100%',
+                                height: '12px',
+                                background: 'rgba(255,255,255,0.1)',
+                                borderRadius: '6px',
+                                overflow: 'hidden'
+                            }}>
+                                <div style={{
+                                    width: `${Math.min((budgetData.monthlySpending / budgetData.budget.monthlyLimit) * 100, 100)}%`,
+                                    height: '100%',
+                                    background: budgetData.monthlySpending > budgetData.budget.monthlyLimit ? '#ff4d4d' : '#43e97b',
+                                    transition: 'width 0.5s ease-out'
+                                }}></div>
+                            </div>
+                            {budgetData.monthlySpending > budgetData.budget.monthlyLimit && (
+                                <p style={{ color: '#ff4d4d', fontSize: '12px', marginTop: '10px', fontWeight: 'bold' }}>
+                                    Warning: You have exceeded your monthly budget!
+                                </p>
+                            )}
+                        </div>
+                    ) : (
+                        <p style={{ margin: 0, opacity: 0.6, fontStyle: 'italic' }}>Set a monthly limit to track your spending utilization.</p>
+                    )}
+                </div>
+            )}
 
             {/* Controls Area */}
             {!showForm && (
@@ -514,6 +701,7 @@ const Dashboard = () => {
                                     onDelete={deleteSubscription}
                                     onEdit={startEdit}
                                     onPay={() => handlePayClick(sub)}
+                                    onPause={togglePauseSubscription}
                                 />
                             ))}
                         </div>

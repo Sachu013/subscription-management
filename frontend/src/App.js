@@ -9,6 +9,8 @@ import Analytics from './pages/Analytics';
 import Reports from './pages/Reports';
 import Profile from './pages/Profile';
 import CategoryComparison from './pages/CategoryComparison';
+import CalendarView from './pages/CalendarView';
+import PaymentHistory from './pages/PaymentHistory';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -32,6 +34,8 @@ function App() {
               <Route path="/" element={<PrivateRoute />}>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/analytics" element={<Analytics />} />
+                <Route path="/calendar" element={<CalendarView />} />
+                <Route path="/subscriptions/:id/payments" element={<PaymentHistory />} />
                 <Route path="/category-comparison" element={<CategoryComparison />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/profile" element={<Profile />} />

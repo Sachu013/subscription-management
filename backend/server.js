@@ -4,11 +4,16 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const path = require('path');
 
+const { startReminderCron } = require('./utils/reminderService');
+
 // Load environment variables
 dotenv.config();
 
 // Connect to Database
 connectDB();
+
+// Start Reminder Cron Job
+startReminderCron();
 
 const app = express();
 
@@ -34,6 +39,8 @@ app.get('/', (req, res) => {
 // Define Routes
 app.use('/api/auth', require('./routes/userRoutes'));
 app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/budget', require('./routes/budgetRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
 app.use('/health', require('./routes/health.route'));
 

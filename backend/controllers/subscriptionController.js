@@ -236,6 +236,35 @@ const paySubscription = async (req, res) => {
     }
 };
 
+// @desc    Get subscriptions formatted for calendar
+// @route   GET /api/subscriptions/calendar
+// @access  Private
+const getCalendarData = async (req, res) => {
+    try {
+        const subscriptions = await Subscription.find({
+            user: req.user.id,
+            status: { $ne: 'Expired' }
+        });
+
+        const calendarEvents = subscriptions.map(sub => {
+            const nextDue = getNextDueDate(sub);
+            return {
+                id: sub._id,
+                title: sub.name,
+                start: nextDue,
+                end: nextDue,
+                amount: sub.price || sub.cost || 0,
+                category: sub.category,
+                status: getSubscriptionStatus(sub)
+            };
+        });
+
+        res.status(200).json(calendarEvents);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getSubscriptions,
     createSubscription,
@@ -243,4 +272,5 @@ module.exports = {
     updateSubscription,
     deleteSubscription,
     paySubscription,
+    getCalendarData,
 };

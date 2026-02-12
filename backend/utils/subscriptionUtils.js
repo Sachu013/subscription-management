@@ -17,6 +17,11 @@ const addCycle = (date, cycle) => {
  * Calculate subscription status dynamically
  */
 const getSubscriptionStatus = (sub) => {
+    // If explicitly paused in DB, return Paused
+    if (sub.status === 'Paused') {
+        return "Paused";
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -76,6 +81,8 @@ const getLastPaymentDate = (sub) => {
  * Get the next due date
  */
 const getNextDueDate = (sub) => {
+    if (sub.status === 'Paused') return null;
+
     const start = new Date(sub.startDate);
     const payments = sub.payments || [];
 

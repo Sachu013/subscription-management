@@ -6,13 +6,15 @@ const {
     getSubscriptionById,
     updateSubscription,
     deleteSubscription,
-    paySubscription
+    paySubscription,
+    getCalendarData,
 } = require('../controllers/subscriptionController');
 const { protect } = require('../middleware/authMiddleware');
 
 
 router.route('/').get(protect, getSubscriptions).post(protect, createSubscription);
+router.get('/calendar', protect, getCalendarData);
 router.route('/:id').get(protect, getSubscriptionById).put(protect, updateSubscription).delete(protect, deleteSubscription);
-router.route('/:id/pay').post(protect, paySubscription);
+router.post('/:id/pay', protect, paySubscription);
 
 module.exports = router;
