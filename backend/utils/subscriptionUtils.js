@@ -10,30 +10,26 @@ const getSubscriptionStatus = (subscription) => {
     const start = new Date(subscription.startDate);
     start.setHours(0, 0, 0, 0);
 
-    const end = subscription.endDate
-        ? new Date(subscription.endDate)
-        : null;
-
-    if (end) end.setHours(0, 0, 0, 0);
+    const nextBilling = new Date(subscription.nextBillingDate);
+    nextBilling.setHours(0, 0, 0, 0);
 
     let status;
 
-    if (start > today) {
+    if (today < start) {
         status = "UPCOMING";
     }
-    else if (end && end < today) {
-        status = "EXPIRED";
+    else if (today <= nextBilling) {
+        status = "ACTIVE";
     }
     else {
-        status = "ACTIVE";
+        status = "EXPIRED";
     }
 
     // MANDATORY VERIFICATION LOG
-    console.log(`--- [DEBUG] Subscription: ${subscription.name} ---`);
-    console.log(`Raw startDate: ${subscription.startDate} (${typeof subscription.startDate})`);
-    console.log(`Raw endDate: ${subscription.endDate} (${typeof subscription.endDate})`);
-    console.log(`Processed start: ${start.toISOString()}`);
-    console.log(`Processed end: ${end ? end.toISOString() : 'NULL'}`);
+    console.log(`--- [DEBUG] Subscription Status Calculation ---`);
+    console.log(`Name: ${subscription.name}`);
+    console.log(`Raw startDate: ${subscription.startDate}`);
+    console.log(`Raw nextBillingDate: ${subscription.nextBillingDate}`);
     console.log(`Today: ${today.toISOString()}`);
     console.log(`Computed Status: ${status}`);
     console.log('-------------------------------------------');
@@ -59,19 +55,14 @@ const isActiveInMonth = (subscription, month, year) => {
     if (isNaN(startDate.getTime())) return false;
     startDate.setHours(0, 0, 0, 0);
 
-    let endDate = null;
-    if (subscription.endDate) {
-        endDate = new Date(subscription.endDate);
-        if (isNaN(endDate.getTime())) {
-            endDate = null;
-        } else {
-            endDate.setHours(23, 59, 59, 999);
-        }
-    }
+    const nextBilling = new Date(subscription.nextBillingDate);
+    if (isNaN(nextBilling.getTime())) return false;
+    nextBilling.setHours(23, 59, 59, 999);
 
     // A subscription is active in that month IF:
-    // startDate <= monthEnd AND (endDate is NULL OR endDate >= monthStart)
-    return startDate <= monthEnd && (endDate === null || endDate >= monthStart);
+    // It started before or during the month AND hasn't expired before the month started
+    // Rule: Active if startDate <= monthEnd AND nextBillingDate >= monthStart
+    return startDate <= monthEnd && nextBilling >= monthStart;
 };
 
 /**
@@ -96,3 +87,4 @@ module.exports = {
     isActiveInMonth,
     getNormalizedMonthlyCost
 };
+

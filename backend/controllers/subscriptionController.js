@@ -11,10 +11,15 @@ const getSubscriptions = async (req, res) => {
 
         // Add computedStatus to each subscription
         const subscriptionsWithStatus = subscriptions.map(sub => {
+            const computedStatus = getSubscriptionStatus(sub);
+
+            // MANDATORY VERIFICATION LOG for Response
+            console.log(`[API RESPONSE] Sub: ${sub.name}, Computed Status: ${computedStatus}`);
+
             const subObj = sub.toObject();
             return {
                 ...subObj,
-                computedStatus: getSubscriptionStatus(sub)
+                computedStatus: computedStatus
             };
         });
 
@@ -37,7 +42,6 @@ const createSubscription = async (req, res) => {
         billingCycle,
         nextBillingDate,
         endDate,
-        status,
     } = req.body;
 
     if (!name || !cost || !startDate || !billingCycle || !nextBillingDate) {

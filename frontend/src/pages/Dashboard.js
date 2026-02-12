@@ -209,18 +209,7 @@ const Dashboard = () => {
         'Other'
     ];
 
-    // Get expiring subscriptions
-    const getExpiringSoon = () => {
-        const today = new Date();
-        return subscriptions.filter(sub => {
-            if (!sub.reminderEnabled || !sub.nextBillingDate) return false;
-            const nextBilling = new Date(sub.nextBillingDate);
-            const daysUntilRenewal = Math.ceil((nextBilling - today) / (1000 * 60 * 60 * 24));
-            return daysUntilRenewal <= sub.reminderDays && daysUntilRenewal >= 0;
-        });
-    };
-
-    const expiringSoon = getExpiringSoon();
+    const expiringSoon = upcomingPayments;
 
     if (isLoading) {
         return <Spinner />;

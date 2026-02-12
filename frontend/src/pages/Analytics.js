@@ -19,8 +19,8 @@ const Analytics = () => {
     const [topSubscriptions, setTopSubscriptions] = useState([]);
 
     // Filter states
-    const [categoryFilter, setCategoryFilter] = useState('current');
-    const [topSubFilter, setTopSubFilter] = useState('current');
+    const [categoryFilter, setCategoryFilter] = useState('all_time');
+    const [topSubFilter, setTopSubFilter] = useState('allTime');
 
     useEffect(() => {
         if (!user) {
@@ -217,9 +217,9 @@ const Analytics = () => {
                                 outline: 'none'
                             }}
                         >
-                            <option value="current" style={{ background: '#333' }}>Current</option>
                             <option value="all_time" style={{ background: '#333' }}>All Time</option>
-                            <option value="expired" style={{ background: '#333' }}>Expired</option>
+                            <option value="active_only" style={{ background: '#333' }}>Current Active Only</option>
+                            <option value="current_month" style={{ background: '#333' }}>Current Month Only</option>
                         </select>
                     </div>
                     {categoryData.length > 0 ? (
@@ -277,32 +277,48 @@ const Analytics = () => {
                         </h2>
                         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', padding: '2px' }}>
                             <button
-                                onClick={() => setTopSubFilter('current')}
+                                onClick={() => setTopSubFilter('allTime')}
                                 style={{
                                     border: 'none',
                                     borderRadius: '6px',
                                     padding: '5px 12px',
                                     fontSize: '12px',
                                     cursor: 'pointer',
-                                    background: topSubFilter === 'current' ? '#667eea' : 'transparent',
-                                    color: '#fff'
-                                }}
-                            >
-                                Current
-                            </button>
-                            <button
-                                onClick={() => setTopSubFilter('all_time')}
-                                style={{
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    padding: '5px 12px',
-                                    fontSize: '12px',
-                                    cursor: 'pointer',
-                                    background: topSubFilter === 'all_time' ? '#667eea' : 'transparent',
-                                    color: '#fff'
+                                    background: topSubFilter === 'allTime' ? '#667eea' : 'transparent',
+                                    color: '#fff',
+                                    marginRight: '2px'
                                 }}
                             >
                                 All Time
+                            </button>
+                            <button
+                                onClick={() => setTopSubFilter('activeOnly')}
+                                style={{
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '5px 12px',
+                                    fontSize: '12px',
+                                    cursor: 'pointer',
+                                    background: topSubFilter === 'activeOnly' ? '#667eea' : 'transparent',
+                                    color: '#fff',
+                                    marginRight: '2px'
+                                }}
+                            >
+                                Active
+                            </button>
+                            <button
+                                onClick={() => setTopSubFilter('expiredOnly')}
+                                style={{
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '5px 12px',
+                                    fontSize: '12px',
+                                    cursor: 'pointer',
+                                    background: topSubFilter === 'expiredOnly' ? '#667eea' : 'transparent',
+                                    color: '#fff'
+                                }}
+                            >
+                                Expired
                             </button>
                         </div>
                     </div>

@@ -37,8 +37,8 @@ const getAnalyticsSummary = async (req, res) => {
                 upcomingCount++;
             }
 
-            // 2. Upcoming Due Soon (Optional: nextBillingDate within next 7 days)
-            if (sub.nextBillingDate) {
+            // 2. Upcoming Due Soon (nextBillingDate within next 7 days AND still Active)
+            if (computedStatus === 'ACTIVE' && sub.nextBillingDate) {
                 const nextBilling = new Date(sub.nextBillingDate);
                 nextBilling.setHours(0, 0, 0, 0);
                 const diffTime = nextBilling - now;
@@ -50,6 +50,7 @@ const getAnalyticsSummary = async (req, res) => {
             }
 
             // 3. Monthly Spending (Current Month Only)
+            // Rule: Include if Active in current month OR nextBillingDate falls in current month
             if (isActiveInMonth(sub, currentMonth, currentYear)) {
                 monthlyTotal += getNormalizedMonthlyCost(sub);
             }
@@ -62,7 +63,7 @@ const getAnalyticsSummary = async (req, res) => {
             upcomingDueSoonCount,
             totalCount: subscriptions.length,
             monthlyTotal: parseFloat(monthlyTotal.toFixed(2)),
-            yearlyTotal: parseFloat((monthlyTotal * 12).toFixed(2)) // Normalized extension
+            yearlyTotal: parseFloat((monthlyTotal * 12).toFixed(2))
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -71,18 +72,22 @@ const getAnalyticsSummary = async (req, res) => {
 
 
 // @desc    Get category-wise breakdown
-// @route   GET /api/analytics/category-breakdown?filter=current|all_time|expired
+// @route   GET /api/analytics/category-breakdown?filter=all_time|active_only|current_month
 // @access  Private
 const getCategoryBreakdown = async (req, res) => {
     try {
-        const filter = req.query.filter || 'current';
+        const filter = req.query.filter || 'all_time';
         const subscriptions = await Subscription.find({ user: req.user.id });
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
 
         let filteredSubscriptions = subscriptions;
-        if (filter === 'current') {
+
+        if (filter === 'active_only') {
             filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'ACTIVE');
-        } else if (filter === 'expired') {
-            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'EXPIRED');
+        } else if (filter === 'current_month') {
+            filteredSubscriptions = subscriptions.filter(sub => isActiveInMonth(sub, currentMonth, currentYear));
         }
 
         const categoryMap = {};
@@ -129,9 +134,7 @@ const getMonthlyTrend = async (req, res) => {
             const year = date.getFullYear();
             const monthName = date.toLocaleString('default', { month: 'short', year: 'numeric' });
 
-            // Calculate spending for this month independently
             let monthlyTotal = 0;
-
             subscriptions.forEach(sub => {
                 if (isActiveInMonth(sub, month, year)) {
                     monthlyTotal += getNormalizedMonthlyCost(sub);
@@ -152,17 +155,19 @@ const getMonthlyTrend = async (req, res) => {
 
 
 // @desc    Get top subscriptions by cost
-// @route   GET /api/analytics/top-subscriptions?limit=5&filter=current|all_time
+// @route   GET /api/analytics/top-subscriptions?limit=5&filter=allTime|activeOnly|expiredOnly
 // @access  Private
 const getTopSubscriptions = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 5;
-        const filter = req.query.filter || 'current';
+        const filter = req.query.filter || 'allTime';
         const subscriptions = await Subscription.find({ user: req.user.id });
 
         let filteredSubscriptions = subscriptions;
-        if (filter === 'current') {
+        if (filter === 'activeOnly') {
             filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'ACTIVE');
+        } else if (filter === 'expiredOnly') {
+            filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'EXPIRED');
         }
 
         const subscriptionsWithMonthlyCost = filteredSubscriptions.map(sub => {
