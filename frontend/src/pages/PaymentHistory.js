@@ -38,6 +38,7 @@ const PaymentHistory = () => {
                     setPayments(pay);
                 }
             } catch (error) {
+                console.error('Fetch error:', error.response || error.message);
                 toast.error('Error fetching payment history');
             } finally {
                 setIsLoading(false);

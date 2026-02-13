@@ -340,7 +340,7 @@ const Analytics = () => {
                                         <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0 }}>{sub.category}</p>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
-                                        <p style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>₹{sub.totalAmountSpent}</p>
+                                        <p style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--primary)', margin: 0 }}>₹{sub.totalSpent || 0}</p>
                                     </div>
                                 </div>
                             ))}

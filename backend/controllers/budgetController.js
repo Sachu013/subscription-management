@@ -12,19 +12,31 @@ const getBudget = async (req, res) => {
             budget = await UserBudget.create({ user: req.user.id, monthlyLimit: 0, categoryLimits: [] });
         }
 
-        // Calculate current month spending
-        const subscriptions = await Subscription.find({
-            user: req.user.id,
-            status: 'Active' // Exclude Paused and Expired
-        });
+        // Calculate current month spending from actual payments
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-        const monthlySpending = subscriptions.reduce((sum, sub) => sum + getNormalizedMonthlyCost(sub), 0);
+        // Fetch all subscriptions for the user
+        const subscriptions = await Subscription.find({ user: req.user.id });
 
-        // Category breakdown
+        // Sum payments that fall within the current month across ALL user's subscriptions
+        let monthlySpending = 0;
         const categorySpending = {};
+
         subscriptions.forEach(sub => {
-            const cost = getNormalizedMonthlyCost(sub);
-            categorySpending[sub.category] = (categorySpending[sub.category] || 0) + cost;
+            if (sub.payments && sub.payments.length > 0) {
+                sub.payments.forEach(p => {
+                    const pDate = new Date(p.paidOn);
+                    if (pDate >= startOfMonth && pDate <= endOfMonth) {
+                        monthlySpending += (p.amount || 0);
+
+                        // Also update category breakdown based on current month's ACTUAL payments
+                        const category = sub.category || 'Other';
+                        categorySpending[category] = (categorySpending[category] || 0) + (p.amount || 0);
+                    }
+                });
+            }
         });
 
         res.status(200).json({

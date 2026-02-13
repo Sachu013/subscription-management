@@ -304,7 +304,7 @@ const Dashboard = () => {
         const diffTime = nextDue - new Date();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return { ...sub, daysUntilRenewal: diffDays };
-    }).filter(sub => sub.status === 'Upcoming' || (sub.daysUntilRenewal >= 0 && sub.daysUntilRenewal <= 7)).sort((a, b) => a.daysUntilRenewal - b.daysUntilRenewal);
+    }).filter(sub => sub.status === 'Active' && sub.daysUntilRenewal >= 0 && sub.daysUntilRenewal <= 7).sort((a, b) => a.daysUntilRenewal - b.daysUntilRenewal);
 
     const { theme, toggleTheme } = useContext(ThemeContext);
 
@@ -572,7 +572,7 @@ const Dashboard = () => {
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
                             <FaBell style={{ fontSize: '28px', color: '#ff9800' }} />
                         </div>
-                        <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Upcoming</h3>
+                        <h3 style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Upcoming Payments</h3>
                         <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>{analyticsSummary.upcomingCount || 0}</p>
                     </div>
 

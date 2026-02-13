@@ -116,17 +116,21 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay, onPause }) =>
                     style={{
                         gridColumn: '1 / -1',
                         padding: '12px',
-                        marginBottom: '4px'
+                        marginBottom: '4px',
+                        background: 'var(--primary)',
+                        color: '#fff'
                     }}
                 >
                     Add Payment
                 </button>
                 <button
                     onClick={() => onPause(subscription)}
-                    className="btn btn-secondary"
+                    className="btn"
                     style={{
                         padding: '10px',
-                        fontSize: '13px'
+                        fontSize: '13px',
+                        background: '#dfb97a',
+                        color: '#fff'
                     }}
                 >
                     {subscription.status === 'Paused' ? 'Resume' : 'Pause'}
@@ -146,10 +150,12 @@ const SubscriptionItem = ({ subscription, onDelete, onEdit, onPay, onPause }) =>
                 </button>
                 <button
                     onClick={() => onDelete(subscription._id)}
-                    className="btn btn-danger"
+                    className="btn"
                     style={{
                         padding: '10px',
-                        fontSize: '13px'
+                        fontSize: '13px',
+                        background: 'var(--danger)',
+                        color: '#fff'
                     }}
                 >
                     Delete
