@@ -119,6 +119,10 @@ header {
   box-shadow: 0 0 0 2px rgba(120, 154, 153, 0.2);
 }
 
+select {
+  border-radius: 12px !important;
+}
+
 /* Dashboard */
 .dashboard {
   background: var(--card-bg);

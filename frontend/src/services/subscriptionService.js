@@ -75,9 +75,22 @@ const getCalendarData = async (token) => {
     return response.data;
 };
 
+// Get single subscription
+const getSubscriptionById = async (subscriptionId, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await http.get(API_URL + subscriptionId, config);
+    return response.data;
+};
+
 const subscriptionService = {
     createSubscription,
     getSubscriptions,
+    getSubscriptionById,
     deleteSubscription,
     updateSubscription,
     paySubscription,
