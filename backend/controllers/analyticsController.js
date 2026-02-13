@@ -57,29 +57,34 @@ const getAnalyticsSummary = async (req, res) => {
         let activeCount = 0;
         let expiredCount = 0;
         let upcomingCount = 0;
-        let monthlyTotal = 0;
-        let allTimeTotal = 0;
+        const Payment = require('../models/paymentModel');
+        const [monthlyPayments, allPayments] = await Promise.all([
+            Payment.find({
+                user: req.user.id,
+                paymentDate: { $gte: new Date(currentYear, currentMonth, 1), $lte: new Date(currentYear, currentMonth + 1, 0, 23, 59, 59) }
+            }),
+            Payment.find({ user: req.user.id })
+        ]);
+
+        const monthlyTotal = monthlyPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+        const allTimeTotal = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
         subscriptions.forEach(sub => {
             const subObj = sub.toObject();
             const status = getSubscriptionStatus(subObj);
-            const totalSpent = getTotalAmountSpent(subObj);
-
-            allTimeTotal += totalSpent;
 
             if (status === 'Active') activeCount++;
             else if (status === 'Expired') expiredCount++;
             else if (status === 'Upcoming') upcomingCount++;
+        });
 
-            // Sum payments in current month
-            if (sub.payments) {
-                sub.payments.forEach(p => {
-                    const pDate = new Date(p.paidOn);
-                    if (pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear) {
-                        monthlyTotal += p.amount;
-                    }
-                });
-            }
+        res.status(200).json({
+            activeCount,
+            expiredCount,
+            upcomingCount,
+            totalCount: subscriptions.length,
+            monthlyTotal: parseFloat(monthlyTotal.toFixed(2)),
+            allTimeTotal: parseFloat(allTimeTotal.toFixed(2))
         });
 
         res.status(200).json({
@@ -115,32 +120,29 @@ const getCategoryBreakdown = async (req, res) => {
             filteredSubscriptions = subscriptions.filter(sub => isActiveInMonth(sub, currentMonth, currentYear));
         }
 
+        const Payment = require('../models/paymentModel');
         const categoryMap = {};
 
-        filteredSubscriptions.forEach(sub => {
-            const category = sub.category || 'Other';
-            // Cost depends on filter. For all_time, it's total spending. 
-            // For current_month, it's payments IN that month.
-            let costToAdd = 0;
-            if (filter === 'current_month') {
-                if (sub.payments) {
-                    sub.payments.forEach(p => {
-                        const pDate = new Date(p.paidOn);
-                        if (pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear) {
-                            costToAdd += (p.amount || 0);
-                        }
-                    });
-                }
-            } else {
-                costToAdd = getTotalAmountSpent(sub);
-            }
+        if (filter === 'current_month') {
+            const currentPayments = await Payment.find({
+                user: req.user.id,
+                paymentDate: { $gte: new Date(currentYear, currentMonth, 1), $lte: new Date(currentYear, currentMonth + 1, 0, 23, 59, 59) }
+            }).populate('subscription');
 
-            if (categoryMap[category]) {
-                categoryMap[category] += costToAdd;
-            } else {
-                categoryMap[category] = costToAdd;
-            }
-        });
+            currentPayments.forEach(p => {
+                const category = (p.subscription && p.subscription.category) || 'Other';
+                categoryMap[category] = (categoryMap[category] || 0) + (p.amount || 0);
+            });
+        } else {
+            // For allTime or activeOnly, we can still use subscriptions but we should calculate totalSpent from Payment collection
+            const subIds = filteredSubscriptions.map(s => s._id);
+            const allPayments = await Payment.find({ subscription: { $in: subIds } }).populate('subscription');
+
+            allPayments.forEach(p => {
+                const category = (p.subscription && p.subscription.category) || 'Other';
+                categoryMap[category] = (categoryMap[category] || 0) + (p.amount || 0);
+            });
+        }
 
         const breakdown = Object.keys(categoryMap).map(cat => ({
             name: cat,
@@ -162,6 +164,7 @@ const getMonthlyExpenses = async (req, res) => {
         const monthlyData = [];
         const today = new Date();
 
+        const Payment = require('../models/paymentModel');
         for (let i = 5; i >= 0; i--) {
             const d = new Date();
             d.setMonth(d.getMonth() - i);
@@ -169,18 +172,12 @@ const getMonthlyExpenses = async (req, res) => {
             const year = d.getFullYear();
             const monthName = d.toLocaleString('default', { month: 'short' });
 
-            let monthlyTotal = 0;
-
-            subscriptions.forEach(sub => {
-                if (sub.payments) {
-                    sub.payments.forEach(p => {
-                        const pDate = new Date(p.paidOn);
-                        if (pDate.getMonth() === month && pDate.getFullYear() === year) {
-                            monthlyTotal += p.amount;
-                        }
-                    });
-                }
+            const monthlyPayments = await Payment.find({
+                user: req.user.id,
+                paymentDate: { $gte: new Date(year, month, 1), $lte: new Date(year, month + 1, 0, 23, 59, 59) }
             });
+
+            const monthlyTotal = monthlyPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
             monthlyData.push({
                 month: monthName,
@@ -212,17 +209,23 @@ const getTopSubscriptions = async (req, res) => {
             filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'Expired');
         }
 
-        const subscriptionsWithTotalCost = filteredSubscriptions.map(sub => {
+        const Payment = require('../models/paymentModel');
+        const subscriptionsWithTotalCost = await Promise.all(filteredSubscriptions.map(async (sub) => {
             const price = sub.price !== undefined ? sub.price : (sub.cost !== undefined ? sub.cost : 0);
+
+            // Calculate actual total spent from Payment collection
+            const payments = await Payment.find({ subscription: sub._id, user: req.user.id });
+            const totalSpent = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+
             return {
                 _id: sub._id,
                 name: sub.name,
                 category: sub.category,
                 price: price,
                 billingCycle: sub.billingCycle,
-                totalSpent: getTotalAmountSpent(sub)
+                totalSpent: parseFloat(totalSpent.toFixed(2))
             };
-        });
+        }));
 
         const topSubscriptions = subscriptionsWithTotalCost
             .sort((a, b) => b.totalSpent - a.totalSpent)

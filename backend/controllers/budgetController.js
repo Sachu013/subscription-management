@@ -12,36 +12,28 @@ const getBudget = async (req, res) => {
             budget = await UserBudget.create({ user: req.user.id, monthlyLimit: 0, categoryLimits: [] });
         }
 
-        // Calculate current month spending from actual payments
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+        const Payment = require('../models/paymentModel');
 
-        // Fetch all subscriptions for the user
-        const subscriptions = await Subscription.find({ user: req.user.id });
+        // Sum payments that fall within the current month across ALL user's payments
+        const currentMonthPayments = await Payment.find({
+            user: req.user.id,
+            paymentDate: { $gte: startOfMonth, $lte: endOfMonth }
+        }).populate('subscription');
 
-        // Sum payments that fall within the current month across ALL user's subscriptions
         let monthlySpending = 0;
         const categorySpending = {};
 
-        subscriptions.forEach(sub => {
-            if (sub.payments && sub.payments.length > 0) {
-                sub.payments.forEach(p => {
-                    const pDate = new Date(p.paidOn);
-                    if (pDate >= startOfMonth && pDate <= endOfMonth) {
-                        monthlySpending += (p.amount || 0);
+        currentMonthPayments.forEach(payment => {
+            const amount = payment.amount || 0;
+            monthlySpending += amount;
 
-                        // Also update category breakdown based on current month's ACTUAL payments
-                        const category = sub.category || 'Other';
-                        categorySpending[category] = (categorySpending[category] || 0) + (p.amount || 0);
-                    }
-                });
-            }
+            const category = (payment.subscription && payment.subscription.category) || 'Other';
+            categorySpending[category] = (categorySpending[category] || 0) + amount;
         });
 
         res.status(200).json({
             budget,
-            monthlySpending,
+            monthlySpending: parseFloat(monthlySpending.toFixed(2)),
             categorySpending
         });
     } catch (error) {

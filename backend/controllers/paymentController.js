@@ -84,6 +84,18 @@ const deletePayment = async (req, res) => {
             return res.status(401).json({ message: 'Payment not found or unauthorized' });
         }
 
+        const subscription = await Subscription.findById(payment.subscription);
+        if (subscription) {
+            // Find and remove the matching payment from sub.payments array
+            // We match by amount and date (approximate) or just filter out if they are similar
+            subscription.payments = subscription.payments.filter(p => {
+                const pDate = new Date(p.paidOn).getTime();
+                const payDate = new Date(payment.paymentDate).getTime();
+                return !(p.amount === payment.amount && Math.abs(pDate - payDate) < 10000);
+            });
+            await subscription.save();
+        }
+
         await payment.deleteOne();
         res.status(200).json({ id: req.params.id });
     } catch (error) {
