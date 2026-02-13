@@ -690,8 +690,8 @@ const Dashboard = () => {
                         }}>
                             <FaSort style={{ color: 'var(--text-secondary)', fontSize: '14px' }} />
                             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ border: 'none', background: 'transparent', padding: '8px', cursor: 'pointer', outline: 'none' }}>
-                                <option value="date-asc">Due Soon</option>
                                 <option value="date-desc">Latest First</option>
+                                <option value="date-asc">Due Soon</option>
                                 <option value="cost-desc">High Cost</option>
                                 <option value="cost-asc">Low Cost</option>
                             </select>
