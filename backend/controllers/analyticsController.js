@@ -1,4 +1,5 @@
 const Subscription = require('../models/subscriptionModel');
+const Payment = require('../models/paymentModel');
 const {
     getSubscriptionStatus,
     isActiveInMonth,
@@ -47,6 +48,9 @@ const getFilteredSubscriptions = async (req) => {
 // @desc    Get analytics summary
 // @route   GET /api/analytics/summary
 // @access  Private
+// @desc    Get analytics summary
+// @route   GET /api/analytics/summary
+// @access  Private
 const getAnalyticsSummary = async (req, res) => {
     try {
         const subscriptions = await getFilteredSubscriptions(req);
@@ -57,7 +61,7 @@ const getAnalyticsSummary = async (req, res) => {
         let activeCount = 0;
         let expiredCount = 0;
         let upcomingCount = 0;
-        const Payment = require('../models/paymentModel');
+
         const [monthlyPayments, allPayments] = await Promise.all([
             Payment.find({
                 user: req.user.id,
@@ -76,15 +80,6 @@ const getAnalyticsSummary = async (req, res) => {
             if (status === 'Active') activeCount++;
             else if (status === 'Expired') expiredCount++;
             else if (status === 'Upcoming') upcomingCount++;
-        });
-
-        res.status(200).json({
-            activeCount,
-            expiredCount,
-            upcomingCount,
-            totalCount: subscriptions.length,
-            monthlyTotal: parseFloat(monthlyTotal.toFixed(2)),
-            allTimeTotal: parseFloat(allTimeTotal.toFixed(2))
         });
 
         res.status(200).json({
@@ -120,7 +115,6 @@ const getCategoryBreakdown = async (req, res) => {
             filteredSubscriptions = subscriptions.filter(sub => isActiveInMonth(sub, currentMonth, currentYear));
         }
 
-        const Payment = require('../models/paymentModel');
         const categoryMap = {};
 
         if (filter === 'current_month') {
@@ -164,7 +158,6 @@ const getMonthlyExpenses = async (req, res) => {
         const monthlyData = [];
         const today = new Date();
 
-        const Payment = require('../models/paymentModel');
         for (let i = 5; i >= 0; i--) {
             const d = new Date();
             d.setMonth(d.getMonth() - i);
@@ -209,7 +202,6 @@ const getTopSubscriptions = async (req, res) => {
             filteredSubscriptions = subscriptions.filter(sub => getSubscriptionStatus(sub) === 'Expired');
         }
 
-        const Payment = require('../models/paymentModel');
         const subscriptionsWithTotalCost = await Promise.all(filteredSubscriptions.map(async (sub) => {
             const price = sub.price !== undefined ? sub.price : (sub.cost !== undefined ? sub.cost : 0);
 

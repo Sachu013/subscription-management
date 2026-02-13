@@ -1,5 +1,6 @@
 const UserBudget = require('../models/budgetModel');
 const Subscription = require('../models/subscriptionModel');
+const Payment = require('../models/paymentModel');
 const { getNormalizedMonthlyCost } = require('../utils/subscriptionUtils');
 
 // @desc    Get user budget and spending
@@ -12,7 +13,10 @@ const getBudget = async (req, res) => {
             budget = await UserBudget.create({ user: req.user.id, monthlyLimit: 0, categoryLimits: [] });
         }
 
-        const Payment = require('../models/paymentModel');
+        // Calculate current month date range
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
         // Sum payments that fall within the current month across ALL user's payments
         const currentMonthPayments = await Payment.find({
