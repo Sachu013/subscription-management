@@ -1,3 +1,4 @@
+const Payment = require('../models/paymentModel');
 const Subscription = require('../models/subscriptionModel');
 const User = require('../models/userModel');
 const {
@@ -224,12 +225,24 @@ const paySubscription = async (req, res) => {
             return res.status(400).json({ message: 'Could not determine payment amount. Please provide an amount.' });
         }
 
+        const amountValue = Number(amount);
         subscription.payments.push({
             paidOn,
-            amount: Number(amount)
+            amount: amountValue
         });
 
         await subscription.save();
+
+        // Create separate Payment record for history sync
+        await Payment.create({
+            subscription: req.params.id,
+            user: req.user.id,
+            amount: amountValue,
+            paymentDate: paidOn,
+            method: req.body.method || 'Online',
+            notes: req.body.notes || ''
+        });
+
         res.status(200).json(formatSubscription(subscription));
     } catch (error) {
         res.status(500).json({ message: error.message });

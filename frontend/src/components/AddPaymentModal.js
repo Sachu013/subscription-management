@@ -4,12 +4,14 @@ import { FaTimes } from 'react-icons/fa';
 const AddPaymentModal = ({ subscription, onClose, onConfirm }) => {
     const [paidOn, setPaidOn] = useState(new Date().toISOString().split('T')[0]);
     const [amount, setAmount] = useState(subscription.price);
+    const [method, setMethod] = useState('Online');
+    const [notes, setNotes] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        await onConfirm(subscription._id, { paidOn, amount });
+        await onConfirm(subscription._id, { paidOn, amount, method, notes });
         setLoading(false);
         onClose();
     };
@@ -49,24 +51,60 @@ const AddPaymentModal = ({ subscription, onClose, onConfirm }) => {
                 </p>
 
                 <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label>Payment Date</label>
-                        <input
-                            type="date"
-                            value={paidOn}
-                            onChange={(e) => setPaidOn(e.target.value)}
-                            required
-                        />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        <div className="form-group">
+                            <label>Date</label>
+                            <input
+                                type="date"
+                                value={paidOn}
+                                onChange={(e) => setPaidOn(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Amount (₹)</label>
+                            <input
+                                type="number"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                required
+                                step="0.01"
+                            />
+                        </div>
                     </div>
 
                     <div className="form-group">
-                        <label>Amount (₹)</label>
-                        <input
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                        <label>Payment Method</label>
+                        <select
+                            value={method}
+                            onChange={(e) => setMethod(e.target.value)}
                             required
-                            step="0.01"
+                        >
+                            <option value="Online">Online</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Card">Card</option>
+                            <option value="UPI">UPI</option>
+                            <option value="Auto-Debit">Auto-Debit</option>
+                        </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Notes (Optional)</label>
+                        <textarea
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            placeholder="Add payment notes..."
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                background: 'var(--background)',
+                                color: 'var(--text-primary)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '12px',
+                                minHeight: '80px',
+                                resize: 'none'
+                            }}
                         />
                     </div>
 
