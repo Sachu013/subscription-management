@@ -20,6 +20,10 @@ import './App.css';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
+if (!GOOGLE_CLIENT_ID) {
+  console.warn('WARNING: REACT_APP_GOOGLE_CLIENT_ID is not defined in your environment variables!');
+}
+
 function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
