@@ -55,7 +55,7 @@ const Dashboard = () => {
     const [billingCycle, setBillingCycle] = useState('All');
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
-    const [sortBy, setSortBy] = useState('date-asc');
+    const [sortBy, setSortBy] = useState('date-desc');
 
     // Edit Mode State
     const [isEditing, setIsEditing] = useState(false);
