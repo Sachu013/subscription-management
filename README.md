@@ -1,9 +1,35 @@
-# Personal Online Subscription Management System (Payment-Centric Refactor)
+# Online Subscription Management System
 
-This system tracks your online subscriptions using a **Payment-Centric Model**. Unlike traditional systems that rely on predicted renewal dates, this platform calculates your subscription status and lifecycle based on **actual payment records**. 
+A web application that helps users manage online subscriptions, monitor recurring expenses, and organize subscription records in one place.
 
-### Key Features:
-- **Dynamic Status Logic**: Subscriptions are `ACTIVE` only if they have a valid payment record for the current period. Otherwise, they are `EXPIRED`.
-- **Manual "Pay Now" Action**: Users record concrete payments to maintain active status and track actual spending.
-- **Accurate Analytics**: Spending metrics reflect real money spent, not just projected costs.
-- **Local Dashboard Alerts**: Renewal alerts are calculated locally for real-time accuracy.
+## Overview
+
+The Online Subscription Management System is designed to simplify subscription tracking by allowing users to maintain a record of their active subscriptions and monitor monthly spending. It provides a convenient way to manage recurring expenses without relying on third-party integrations.
+
+## Features
+
+- Add and manage subscription records
+- Track recurring subscription expenses
+- Monitor monthly subscription spending
+- Organize subscription details through a simple interface
+
+## Tech Stack
+
+- MongoDB
+- Express.js
+- React
+- Node.js
+
+## Live Demo
+
+https://subscription-management-one.vercel.app/login
+
+## GitHub Repository
+
+https://github.com/Sachu013/subscription-management
+
+## Author
+
+**Sachu**
+
+GitHub: https://github.com/Sachu013
